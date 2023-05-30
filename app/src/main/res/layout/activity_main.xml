@@ -6,4 +6,26 @@
     android:layout_height="match_parent"
     tools:context="fr.upjv.MainActivity">
 
+
+    <Button
+        android:id="@+id/btn_goToConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="242dp"
+        android:onClick="handleClickGoToLoginPage"
+        android:text="Je me connecte"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btn_goToRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="89dp"
+        android:onClick="handleClickGoToRegisterPage"
+        android:text="Je m'inscris"
+        app:layout_constraintStart_toStartOf="@+id/btn_goToConnect"
+        app:layout_constraintTop_toBottomOf="@+id/btn_goToConnect" />
 </androidx.constraintlayout.widget.ConstraintLayout>

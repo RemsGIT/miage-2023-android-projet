@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="fr.upjv.LoginActivity">
+
+    <TextView
+        android:id="@+id/textViewLogin_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="97dp"
+        android:layout_marginTop="82dp"
+        android:text="Email"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnLogin_register"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="31dp"
+        android:layout_marginTop="63dp"
+        android:onClick="handleClickLogin"
+        android:text="Se connecter"
+        app:layout_constraintStart_toStartOf="@+id/editTextLogin_password"
+        app:layout_constraintTop_toBottomOf="@+id/editTextLogin_password" />
+
+    <EditText
+        android:id="@+id/editTextLogin_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:inputType="textPassword"
+        app:layout_constraintStart_toStartOf="@+id/textViewLogin_password"
+        app:layout_constraintTop_toBottomOf="@+id/textViewLogin_password" />
+
+    <EditText
+        android:id="@+id/editTextLogin_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:ems="10"
+        android:inputType="textEmailAddress"
+        app:layout_constraintStart_toStartOf="@+id/textViewLogin_email"
+        app:layout_constraintTop_toBottomOf="@+id/textViewLogin_email" />
+
+    <TextView
+        android:id="@+id/textViewLogin_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="50dp"
+        android:text="Mot de passe"
+        app:layout_constraintStart_toStartOf="@+id/editTextLogin_email"
+        app:layout_constraintTop_toBottomOf="@+id/editTextLogin_email" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
