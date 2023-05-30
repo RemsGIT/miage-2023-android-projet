@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "802117207809",
+    "project_id": "rgtravel-f8d2c",
+    "storage_bucket": "rgtravel-f8d2c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:802117207809:android:389e3eb9e4ce68de6b7d00",
+        "android_client_info": {
+          "package_name": "fr.upjv.miage_2023_android_projet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjV4bxLhLZH9_DKNQJDaTfiGr7b4Qkhzc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
