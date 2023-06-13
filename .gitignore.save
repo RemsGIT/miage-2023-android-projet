@@ -1,0 +1,28 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Created by https://www.toptal.com/developers/gitignore/api/android,androidstudio,windows,macos,jetbrains+all,jetbrains,jetbrains+iml
+# Edit at https://www.toptal.com/developers/gitignore?templates=android,androidstudio,windows,macos,jetbrains+all,jetbrains,jetbrains+iml
+
+### Android ###
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+

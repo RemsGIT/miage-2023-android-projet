@@ -2,6 +2,7 @@ package fr.upjv;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -46,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
                         Log.d(TAG, "Login:success : " + user.getEmail());
                         Toast.makeText(LoginActivity.this, "Congrats! You're connected", Toast.LENGTH_SHORT).show();
 
+                        this.redirectToHomePage();
                     } else {
                         Toast.makeText(LoginActivity.this, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show();
@@ -53,4 +55,15 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
+    public void handleGoToRegister(View view) {
+        Intent intentRegister = new Intent(this, RegisterActivity.class);
+
+        startActivity(intentRegister);
+    }
+
+    private void redirectToHomePage(){
+        Intent intentHome = new Intent(this, MainActivity.class);
+
+        startActivity(intentHome);
+    }
 }

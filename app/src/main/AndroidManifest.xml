@@ -12,6 +12,15 @@
         android:theme="@style/Theme.Miage_2023_android_projet"
         tools:targetApi="31">
         <activity
+            android:name="fr.upjv.MapActivity"
+            android:exported="false" />
+        <activity
+            android:name="fr.upjv.TripActivity"
+            android:exported="false" />
+        <activity
+            android:name="fr.upjv.Forms.CreateTripActivity"
+            android:exported="false" />
+        <activity
             android:name="fr.upjv.LoginActivity"
             android:exported="false" />
         <activity

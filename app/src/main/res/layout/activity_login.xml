@@ -10,51 +10,82 @@
         android:id="@+id/textViewLogin_email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="97dp"
-        android:layout_marginTop="82dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="79dp"
         android:text="Email"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/editTextLogin_email"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/btnLogin_register"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="31dp"
-        android:layout_marginTop="63dp"
+        android:layout_width="278dp"
+        android:layout_height="47dp"
+        android:layout_marginBottom="231dp"
         android:onClick="handleClickLogin"
         android:text="Se connecter"
-        app:layout_constraintStart_toStartOf="@+id/editTextLogin_password"
-        app:layout_constraintTop_toBottomOf="@+id/editTextLogin_password" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/textView2" />
 
     <EditText
         android:id="@+id/editTextLogin_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_width="0dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="62dp"
+        android:layout_marginTop="155dp"
+        android:layout_marginEnd="62dp"
+        android:layout_marginBottom="154dp"
         android:ems="10"
         android:inputType="textPassword"
-        app:layout_constraintStart_toStartOf="@+id/textViewLogin_password"
-        app:layout_constraintTop_toBottomOf="@+id/textViewLogin_password" />
+        app:layout_constraintBottom_toBottomOf="@+id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewLogin_email" />
 
     <EditText
         android:id="@+id/editTextLogin_email"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_width="0dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="62dp"
+        android:layout_marginTop="34dp"
+        android:layout_marginEnd="62dp"
+        android:layout_marginBottom="46dp"
         android:ems="10"
         android:inputType="textEmailAddress"
-        app:layout_constraintStart_toStartOf="@+id/textViewLogin_email"
-        app:layout_constraintTop_toBottomOf="@+id/textViewLogin_email" />
+        app:layout_constraintBottom_toTopOf="@+id/textViewLogin_password"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewLogin_email" />
 
     <TextView
         android:id="@+id/textViewLogin_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="3dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginBottom="9dp"
         android:text="Mot de passe"
-        app:layout_constraintStart_toStartOf="@+id/editTextLogin_email"
-        app:layout_constraintTop_toBottomOf="@+id/editTextLogin_email" />
+        app:layout_constraintBottom_toTopOf="@+id/editTextLogin_password"
+        app:layout_constraintStart_toStartOf="@+id/editTextLogin_password" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="56dp"
+        android:text="Pas de compte ?"
+        app:layout_constraintBaseline_toBaselineOf="@+id/button"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="17dp"
+        android:layout_marginBottom="18dp"
+        android:backgroundTint="#FFFFFF"
+        android:onClick="handleGoToRegister"
+        android:text="Je m'inscris"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toTopOf="@+id/btnLogin_register"
+        app:layout_constraintStart_toEndOf="@+id/textView2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
