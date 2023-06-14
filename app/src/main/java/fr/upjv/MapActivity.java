@@ -4,9 +4,11 @@ package fr.upjv;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -21,6 +23,10 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polyline;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import fr.upjv.Model.Coordinate;
 import fr.upjv.Model.Trip;
@@ -156,17 +162,34 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
     }
 
     private void showAllCoordinates() {
+        List<GeoPoint> points = new ArrayList<>();
         for (Coordinate coordinate : trip.getCoordinates()) {
             Marker pointMarker = new Marker(map);
 
             Double latitude = coordinate.getCoords().getLatitude();
             Double longitude = coordinate.getCoords().getLongitude();
 
-            pointMarker.setPosition(new GeoPoint(latitude, longitude));
+
+            GeoPoint point = new GeoPoint(latitude, longitude);
+
+            pointMarker.setPosition(point);
             pointMarker.setTitle("Position enregistrée \npendant votre voyage");
             pointMarker.setIcon(getResources().getDrawable(R.drawable.red_circle_svgrepo_com));
             pointMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_TOP);
             map.getOverlays().add(pointMarker);
+
+            points.add(point);
         }
+        this.displayLineBetweenCoordinates(points);
+
+    }
+
+    private void displayLineBetweenCoordinates(List<GeoPoint> points) {
+        Polyline line = new Polyline();
+        line.setPoints(points);
+        line.setColor(Color.RED);
+        line.setWidth(5f);
+
+        map.getOverlayManager().add(line);
     }
 }

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,8 +29,10 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseFirestore firebaseFirestore;
 
+    // Ui components
     private TextView textNbTrip;
     private TextView btnActionTrip;
+    private ImageView imageView;
 
     private Trip currentTrip;
 
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.textNbTrip = findViewById(R.id.main_text_nbtrip);
         this.btnActionTrip = findViewById(R.id.main_btn_actiontrip);
+        this.imageView = findViewById(R.id.id_main_imageView);
 
         mAuth = FirebaseAuth.getInstance();
         this.firebaseFirestore = FirebaseFirestore.getInstance();
@@ -104,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
         if(Objects.nonNull(this.currentTrip)) {
             this.textNbTrip.setText("Vous avez un voyage en cours");
             this.btnActionTrip.setText("Mon voyage");
+
+            this.imageView.setImageResource(R.drawable.background_trip);
 
             this.btnActionTrip.setOnClickListener(v -> redirectToTrip());
         }
