@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
                         if(dataSnapshot.isSuccessful()) {
                             if(!dataSnapshot.getResult().isEmpty()) {
                                 this.currentTrip = dataSnapshot.getResult().toObjects(Trip.class).get(0);
+
                             }
                         }
 

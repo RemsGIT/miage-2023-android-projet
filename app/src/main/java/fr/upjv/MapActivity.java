@@ -25,6 +25,8 @@ import fr.upjv.Model.Trip;
 import android.Manifest;
 import android.view.View;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import fr.upjv.miage_2023_android_projet.R;
 
 public class MapActivity extends AppCompatActivity implements LocationListener {
@@ -37,7 +39,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
     private Trip trip;
 
     private Location userLocation;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -53,7 +53,7 @@ public class CreateTripActivity extends AppCompatActivity {
                     textPeriod.setText("Manuellement");
                 }
                 else {
-                    String textHour = progress > 1 ? "heures" : "heure";
+                    String textHour = progress > 1 ? "minutes" : "minute";
                     textPeriod.setText(progress + " " +  textHour);
                 }
             }
