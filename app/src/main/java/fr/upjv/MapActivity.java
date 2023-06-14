@@ -1,10 +1,7 @@
 package fr.upjv;
 
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -12,6 +9,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
@@ -20,13 +22,8 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import fr.upjv.Model.Coordinate;
 import fr.upjv.Model.Trip;
-
-import android.Manifest;
-import android.view.View;
-
-import com.google.firebase.firestore.FirebaseFirestore;
-
 import fr.upjv.miage_2023_android_projet.R;
 
 public class MapActivity extends AppCompatActivity implements LocationListener {
@@ -83,6 +80,8 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
         }
 
+        // Affichage des coordonnées enregistrées dans l'app
+        this.showAllCoordinates();
     }
 
     protected void onResume() {
@@ -146,11 +145,28 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         // Add marker at user's position
         Marker userMarker = new Marker(map);
         userMarker.setPosition(geoPoint);
+        userMarker.setIcon(getResources().getDrawable(org.osmdroid.library.R.drawable.person));
+        userMarker.setTitle("Votre position");
         userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         map.getOverlays().add(userMarker);
     }
 
     public void onClickReturn(View view) {
         finish();
+    }
+
+    private void showAllCoordinates() {
+        for (Coordinate coordinate : trip.getCoordinates()) {
+            Marker pointMarker = new Marker(map);
+
+            Double latitude = coordinate.getCoords().getLatitude();
+            Double longitude = coordinate.getCoords().getLongitude();
+
+            pointMarker.setPosition(new GeoPoint(latitude, longitude));
+            pointMarker.setTitle("Position enregistrée \npendant votre voyage");
+            pointMarker.setIcon(getResources().getDrawable(R.drawable.red_circle_svgrepo_com));
+            pointMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_TOP);
+            map.getOverlays().add(pointMarker);
+        }
     }
 }
