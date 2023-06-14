@@ -1,27 +1,22 @@
 package fr.upjv;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.firebase.Timestamp;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.w3c.dom.Text;
-
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import fr.upjv.Adapters.CoordinatesAdapter;
 import fr.upjv.Model.Coordinate;
@@ -39,11 +34,27 @@ public class TripActivity extends AppCompatActivity {
     private TextView tripNameTextView;
     private TextView startDateTextView;
 
+    // FLOATING ACTION BUTTONS
+    private FloatingActionButton fabMain;
+    private FloatingActionButton fabCamera;
+    private FloatingActionButton fabMail;
+    private FloatingActionButton fabPosition;
+
+    private Boolean clicked;
+    private Animation rotateOpen;
+    private Animation rotateClose;
+    private Animation fromBottom;
+    private Animation toBottom;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip);
+
+        // Init floating action buttons
+        this.initFloatingActionButton();
+        this.clicked = false;
 
         // Init UI elements
         this.tripNameTextView = findViewById(R.id.id_trip_text_name);
@@ -111,5 +122,81 @@ public class TripActivity extends AppCompatActivity {
                         startActivity(mainIntent);
                     }
                 });
+    }
+
+    private void initFloatingActionButton() {
+        this.fabMain = findViewById(R.id.id_trip_fab_main);
+        this.fabCamera = findViewById(R.id.id_trip_fab_camera);
+        this.fabMail = findViewById(R.id.id_trip_fab_mail);
+        this.fabPosition = findViewById(R.id.id_trip_fab_position);
+
+        // Init animations
+        this.rotateOpen = AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim);
+        this.rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim);
+        this.fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim);
+        this.toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim);
+    }
+
+    public void onClickFabMain(View view) {
+        setVisibility(clicked);
+        setAnimation(clicked);
+        setClickabled(clicked);
+
+        clicked = !clicked;
+    }
+
+    public void onClickFabCamera(View view) {
+        Toast.makeText(this, "Ouvrir la camera", Toast.LENGTH_SHORT).show();
+    }
+
+    public void onClickFabMail(View view) {
+        Toast.makeText(this, "Envoyer un mail", Toast.LENGTH_SHORT).show();
+    }
+
+    public void onClickFabPosition(View view) {
+        Toast.makeText(this, "Enregistrer la position", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setVisibility(Boolean clicked) {
+        if(!clicked) {
+            this.fabCamera.setVisibility(View.VISIBLE);
+            this.fabMail.setVisibility(View.VISIBLE);
+            this.fabPosition.setVisibility(View.VISIBLE);
+        }
+        else {
+            this.fabCamera.setVisibility(View.INVISIBLE);
+            this.fabMail.setVisibility(View.INVISIBLE);
+            this.fabPosition.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void setAnimation(Boolean clicked) {
+        if(!clicked) {
+            this.fabCamera.startAnimation(fromBottom);
+            this.fabMail.startAnimation(fromBottom);
+            this.fabPosition.startAnimation(fromBottom);
+
+            this.fabMain.startAnimation(rotateOpen);
+        }
+        else {
+            this.fabCamera.startAnimation(toBottom);
+            this.fabMail.startAnimation(toBottom);
+            this.fabPosition.startAnimation(toBottom);
+
+            this.fabMain.startAnimation(rotateClose);
+        }
+    }
+
+    private void setClickabled(Boolean clicked) {
+        if (!clicked) {
+            this.fabCamera.setClickable(true);
+            this.fabMail.setClickable(true);
+            this.fabPosition.setClickable(true);
+        }
+        else {
+            this.fabCamera.setClickable(false);
+            this.fabMail.setClickable(false);
+            this.fabPosition.setClickable(false);
+        }
     }
 }

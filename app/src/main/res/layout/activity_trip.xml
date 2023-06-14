@@ -17,17 +17,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/id_trip_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:clickable="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/plus_1512_svgrepo_com" />
-
     <TextView
         android:id="@+id/id_trip_text_listcoords"
         style="@style/TextAppearance.AppCompat.Display1"
@@ -91,4 +80,58 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="165dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/id_trip_fab_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/green"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onClickFabMain"
+        android:tint="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_plus" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/id_trip_fab_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onClickFabCamera"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/id_trip_fab_main"
+        app:layout_constraintEnd_toEndOf="@+id/id_trip_fab_main"
+        app:srcCompat="@drawable/ic_camera" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/id_trip_fab_mail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onClickFabMail"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/id_trip_fab_camera"
+        app:layout_constraintEnd_toEndOf="@+id/id_trip_fab_camera"
+        app:srcCompat="@drawable/ic_mail" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/id_trip_fab_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:onClick="onClickFabPosition"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/id_trip_fab_mail"
+        app:layout_constraintEnd_toEndOf="@+id/id_trip_fab_mail"
+        app:srcCompat="@drawable/ic_pin" />
 </androidx.constraintlayout.widget.ConstraintLayout>
