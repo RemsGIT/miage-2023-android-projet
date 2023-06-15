@@ -6,6 +6,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
 
@@ -31,8 +32,11 @@ public class CoordinatesViewHolder extends RecyclerView.ViewHolder {
         if(Objects.nonNull(coordinate)) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy H:mm");
 
-            latitude.setText(String.valueOf(coordinate.getCoords().getLatitude()));
-            longitude.setText(String.valueOf(coordinate.getCoords().getLongitude()));
+            // Define decimal format
+            DecimalFormat decimalFormat = new DecimalFormat("#.####");
+
+            latitude.setText(decimalFormat.format(coordinate.getCoords().getLatitude()));
+            longitude.setText(decimalFormat.format(coordinate.getCoords().getLongitude()));
             createdAt.setText(dateFormatter.format(coordinate.getCreatedAt().toDate()));
         }
     }

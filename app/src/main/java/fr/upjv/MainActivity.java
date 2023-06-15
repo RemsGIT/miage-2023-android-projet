@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction("STOP_LOCATION_SERVICE");
         registerReceiver(broadcastReceiver, intentFilter);
 
-        startService(new Intent(this, LocationTrackingService.class).putExtra("period", period).putExtra("tripdocid", tripDocID));
+        //startService(new Intent(this, LocationTrackingService.class).putExtra("period", period).putExtra("tripdocid", tripDocID));
     }
 
     @Override

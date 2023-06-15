@@ -18,6 +18,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 
 import org.checkerframework.checker.units.qual.A;
 
@@ -110,10 +111,11 @@ public class TripActivity extends AppCompatActivity {
 
     private void initCoordinates() {
 
-        CollectionReference coordinatesRef = firebaseFirestore
+        Query coordinatesQuery = firebaseFirestore
                 .collection("voyages")
                 .document(trip.getDocID())
-                .collection("coordinates");
+                .collection("coordinates")
+                .orderBy("createdAt", Query.Direction.ASCENDING);
 
 
         coordinatesAdapter = new CoordinatesAdapter();
@@ -121,7 +123,7 @@ public class TripActivity extends AppCompatActivity {
         recyclerView.setAdapter(coordinatesAdapter);
 
 
-        coordinatesListener = coordinatesRef.addSnapshotListener((snapshot, error) -> {
+        coordinatesListener = coordinatesQuery.addSnapshotListener((snapshot, error) -> {
             if(error != null) {
                 return;
             }
@@ -139,64 +141,6 @@ public class TripActivity extends AppCompatActivity {
             coordinatesAdapter.notifyDataSetChanged();
 
         });
-
-
-        /*
-        // Search coordinates on Firebase
-        this.firebaseFirestore
-                .collection("voyages")
-                .document(trip.getDocID())
-                .collection("coordinates")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        this.trip.setCoordinates(task.getResult().toObjects(Coordinate.class));
-
-                        //this.addFirebaseCoordinatesListener();
-                    }
-
-                    System.out.println(this.trip.getCoordinates().size());
-                    this.coordinatesAdapter = new CoordinatesAdapter(this.trip.getCoordinates());
-                    this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                    this.recyclerView.setAdapter(this.coordinatesAdapter);
-                });
-
-         */
-        /*
-        this.firebaseFirestore
-                .collection("voyages")
-                .document(trip.getDocID())
-                .collection("coordinates")
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        return;
-                    }
-
-                    System.out.println("load coordinates firebase");
-                    List<Coordinate> coordinatesUpdated = value.toObjects(Coordinate.class);
-
-                    this.trip.setCoordinates(new ArrayList<>());
-                    if(firstLoad) {
-                        this.trip.setCoordinates(coordinatesUpdated);
-                        this.coordinatesAdapter = new CoordinatesAdapter(this.trip.getCoordinates());
-                        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                        this.recyclerView.setAdapter(this.coordinatesAdapter);
-                    }
-                    else {
-                        this.trip.clearCoordinates();
-                        this.trip.addAllCoordinates(coordinatesUpdated);
-
-                        System.out.println("object coordiates" + this.trip.getCoordinates().size());
-
-                        // Notify changes
-                        this.coordinatesAdapter.notifyDataSetChanged();
-                    }
-                    firstLoad = false;
-                });
-
-         */
-
-        //this.addFirebaseCoordinatesListener();
     }
 
     public void onClickStopTrip(View view) {
