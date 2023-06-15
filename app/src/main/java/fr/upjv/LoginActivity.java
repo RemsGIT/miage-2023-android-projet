@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         Log.d(TAG, "Login:success : " + user.getEmail());
-                        Toast.makeText(LoginActivity.this, "Congrats! You're connected", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "Connexion", Toast.LENGTH_SHORT).show();
 
                         this.redirectToHomePage();
                     } else {

@@ -1,17 +1,39 @@
 package fr.upjv.Model;
 
+import com.google.firebase.firestore.DocumentId;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class Trip implements Serializable {
+
+    private @DocumentId String docID;
+
+    private String userID;
     private String name;
     private String start;
     private String end;
     private Integer period;
     private Boolean isActive;
 
+    private List<Coordinate> coordinates;
+
+
     public Trip() { }
 
-    public Trip(String name, String start, String end, Integer period, Boolean isActive) {
+    public Trip(String docID, String name,String userID, String start, String end, Integer period, Boolean isActive, List<Coordinate> coordinates) {
+        this.docID = docID;
+        this.name = name;
+        this.start = start;
+        this.end = end;
+        this.period = period;
+        this.isActive = isActive;
+        this.coordinates = coordinates;
+    }
+
+    public Trip(String name, String start,String userID, String end, Integer period, Boolean isActive) {
         this.name = name;
         this.start = start;
         this.end = end;
@@ -59,14 +81,50 @@ public class Trip implements Serializable {
         isActive = active;
     }
 
+    public String getDocID() {
+        return docID;
+    }
+
+    public void setDocID(String docID) {
+        this.docID = docID;
+    }
+
+    public List<Coordinate> getCoordinates() {
+        // Filter coordinates by createdAt
+        return coordinates;
+    }
+
+    public void setCoordinates(List<Coordinate> coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+
     @Override
     public String toString() {
         return "Trip{" +
-                "name='" + name + '\'' +
+                "docID='" + docID + '\'' +
+                ", name='" + name + '\'' +
                 ", start='" + start + '\'' +
                 ", end='" + end + '\'' +
                 ", period=" + period +
                 ", isActive=" + isActive +
                 '}';
+    }
+
+    public void clearCoordinates() {
+        this.coordinates.clear();
+    }
+
+    public void addAllCoordinates(List<Coordinate> coordinates) {
+        System.out.println("appel addAll");
+        System.out.println(coordinates.size());
+        coordinates.addAll(coordinates);
     }
 }

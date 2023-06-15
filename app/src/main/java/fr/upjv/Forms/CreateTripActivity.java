@@ -2,7 +2,8 @@ package fr.upjv.Forms;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.graphics.Color;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -10,14 +11,16 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
+import fr.upjv.BroadcastReceiver.LocationBroadcastReceiver;
+import fr.upjv.MainActivity;
 import fr.upjv.Model.Trip;
+import fr.upjv.Services.LocationTrackingService;
 import fr.upjv.miage_2023_android_projet.R;
 
 public class CreateTripActivity extends AppCompatActivity {
@@ -30,6 +33,7 @@ public class CreateTripActivity extends AppCompatActivity {
     private EditText editTextDateFin;
 
     private FirebaseFirestore firebaseFirestore;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,7 @@ public class CreateTripActivity extends AppCompatActivity {
 
         // Init firebase
         this.firebaseFirestore = FirebaseFirestore.getInstance();
+        this.mAuth = FirebaseAuth.getInstance();
 
         // On change slider
         this.periodSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -53,7 +58,7 @@ public class CreateTripActivity extends AppCompatActivity {
                     textPeriod.setText("Manuellement");
                 }
                 else {
-                    String textHour = progress > 1 ? "heures" : "heure";
+                    String textHour = progress > 1 ? "minutes" : "minute";
                     textPeriod.setText(progress + " " +  textHour);
                 }
             }
@@ -73,6 +78,7 @@ public class CreateTripActivity extends AppCompatActivity {
         Date date = new Date();
         this.editTextDateDebut.setText(dateFormatter.format(date));
         this.disableEditText(this.editTextDateDebut);
+
     }
 
     public void onClickReturn(View view) {
@@ -85,7 +91,9 @@ public class CreateTripActivity extends AppCompatActivity {
         String fin = this.editTextDateFin.getText().toString();
         Integer period = this.periodSeekBar.getProgress();
 
-        Trip newTrip = new Trip(name, debut, fin, period, true);
+        // get mAuth et add uuid
+
+        Trip newTrip = new Trip(name, debut,mAuth.getCurrentUser().getUid(), fin, period, true);
 
         Toast.makeText(this, "Soumission du formulaire", Toast.LENGTH_SHORT).show();
         System.out.println(name);
@@ -103,6 +111,10 @@ public class CreateTripActivity extends AppCompatActivity {
                 .set(data)
                 .addOnCompleteListener(task -> {
                     Toast.makeText(this, "Voyage créé", Toast.LENGTH_SHORT).show();
+
+                    // Redirect the user to home page
+                    Intent intentHome = new Intent(this, MainActivity.class);
+                    startActivity(intentHome);
                 });
     }
 
@@ -112,4 +124,5 @@ public class CreateTripActivity extends AppCompatActivity {
         editText.setCursorVisible(false);
         editText.setKeyListener(null);
     }
+
 }
