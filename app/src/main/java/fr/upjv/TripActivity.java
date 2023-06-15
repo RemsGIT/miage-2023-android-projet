@@ -4,17 +4,21 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -188,6 +192,15 @@ public class TripActivity extends AppCompatActivity {
 
     public void onClickFabCamera(View view) {
         Toast.makeText(this, "Ouvrir la camera", Toast.LENGTH_SHORT).show();
+
+        // Vérifier si la permission de la caméra est déjà accordée
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // La permission de la caméra n'est pas accordée, demander à l'utilisateur de l'accorder
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+        } else {
+            // La permission de la caméra est déjà accordée, ouvrir la caméra
+            openCamera();
+        }
     }
 
     public void onClickFabMail(View view) {
@@ -272,6 +285,40 @@ public class TripActivity extends AppCompatActivity {
             this.fabCamera.setClickable(false);
             this.fabMail.setClickable(false);
             this.fabPosition.setClickable(false);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            // Vérifier si la permission de la caméra a été accordée
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // La permission de la caméra a été accordée, ouvrir la caméra
+                openCamera();
+            } else {
+                // La permission de la caméra a été refusée, afficher un message d'erreur ou prendre une autre action
+                Toast.makeText(this, "Permission de la caméra refusée", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            // La photo a été capturée, faites quelque chose avec les données de la photo
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+
+            System.out.println("photo prise");
+            System.out.println(photo);
+            // Faites quelque chose avec la photo capturée
         }
     }
 }
