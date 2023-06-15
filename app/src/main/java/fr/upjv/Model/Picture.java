@@ -1,8 +1,10 @@
 package fr.upjv.Model;
 
+import java.io.Serializable;
+
 import fr.upjv.Utils.SerializableGeoPoint;
 
-public class Picture {
+public class Picture implements Serializable {
 
     private String imageUrl;
 

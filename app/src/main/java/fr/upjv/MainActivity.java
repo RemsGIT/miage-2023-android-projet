@@ -136,8 +136,6 @@ public class MainActivity extends AppCompatActivity {
 
             this.btnActionTrip.setOnClickListener(v -> redirectToTrip());
         }
-
-        this.testImageCloud();
     }
 
     /**

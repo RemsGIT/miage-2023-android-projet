@@ -107,6 +107,7 @@ public class TripActivity extends AppCompatActivity {
 
         // Load coordinates of a trip
         this.initCoordinates();
+        this.loadPictures();
 
         // Rename text view
         this.tripNameTextView.setText(this.trip.getName());
@@ -123,7 +124,6 @@ public class TripActivity extends AppCompatActivity {
         intent.putExtra("current_trip", this.trip);
 
         startActivity(intent);
-        ;
     }
 
     private void initCoordinates() {
@@ -156,8 +156,19 @@ public class TripActivity extends AppCompatActivity {
             trip.setCoordinates(coordinates);
             coordinatesAdapter.setCoordinates(coordinates);
             coordinatesAdapter.notifyDataSetChanged();
-
         });
+    }
+    private void loadPictures() {
+        this.firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("pictures")
+                .get()
+                .addOnCompleteListener(task -> {
+                   if(task.isSuccessful()) {
+                       this.trip.setPictures(task.getResult().toObjects(Picture.class));
+                   }
+                });
     }
 
     public void onClickStopTrip(View view) {

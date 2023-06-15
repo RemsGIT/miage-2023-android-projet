@@ -20,10 +20,12 @@ public class Trip implements Serializable {
 
     private List<Coordinate> coordinates;
 
+    private List<Picture> pictures;
+
 
     public Trip() { }
 
-    public Trip(String docID, String name,String userID, String start, String end, Integer period, Boolean isActive, List<Coordinate> coordinates) {
+    public Trip(String docID, String name,String userID, String start, String end, Integer period, Boolean isActive, List<Coordinate> coordinates, List<Picture> pictures) {
         this.docID = docID;
         this.name = name;
         this.start = start;
@@ -31,6 +33,7 @@ public class Trip implements Serializable {
         this.period = period;
         this.isActive = isActive;
         this.coordinates = coordinates;
+        this.pictures = pictures;
     }
 
     public Trip(String name, String start,String userID, String end, Integer period, Boolean isActive) {
@@ -90,12 +93,19 @@ public class Trip implements Serializable {
     }
 
     public List<Coordinate> getCoordinates() {
-        // Filter coordinates by createdAt
         return coordinates;
     }
 
     public void setCoordinates(List<Coordinate> coordinates) {
         this.coordinates = coordinates;
+    }
+
+    public List<Picture> getPictures() {
+        return pictures;
+    }
+
+    public void setPictures(List<Picture> pictures) {
+        this.pictures = pictures;
     }
 
     public String getUserID() {

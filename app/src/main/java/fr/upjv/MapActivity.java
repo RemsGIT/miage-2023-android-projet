@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.upjv.Model.Coordinate;
+import fr.upjv.Model.Picture;
 import fr.upjv.Model.Trip;
 import fr.upjv.miage_2023_android_projet.R;
 
@@ -96,6 +97,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
         // Affichage des coordonnées enregistrées dans l'app
         this.showAllCoordinates();
+        this.showAllPictures();
     }
 
     protected void onResume() {
@@ -194,7 +196,20 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
     }
 
     private void showAllPictures() {
+        for (Picture picture : trip.getPictures()) {
+            Marker pictureMarker = new Marker(map);
 
+            Double latitude = picture.getCoords().getLatitude();
+            Double longitude = picture.getCoords().getLongitude();
+
+            GeoPoint point = new GeoPoint(latitude, longitude);
+
+            // augmenter taille icon
+
+            pictureMarker.setPosition(point);
+            pictureMarker.setIcon(getResources().getDrawable(R.drawable.ic_camera));
+            map.getOverlays().add(pictureMarker);
+        }
     }
 
     private void displayLineBetweenCoordinates(List<GeoPoint> points) {
