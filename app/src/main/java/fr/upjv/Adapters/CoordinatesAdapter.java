@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.upjv.Model.Coordinate;
@@ -17,7 +18,15 @@ public class CoordinatesAdapter extends RecyclerView.Adapter<CoordinatesViewHold
 
     private List<Coordinate> coordinates;
 
+    public CoordinatesAdapter() {
+        this.coordinates = new ArrayList<>();
+    }
+
     public CoordinatesAdapter(List<Coordinate> coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    public void setCoordinates(List<Coordinate> coordinates) {
         this.coordinates = coordinates;
     }
 

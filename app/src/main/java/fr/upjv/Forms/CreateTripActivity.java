@@ -2,7 +2,8 @@ package fr.upjv.Forms;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.graphics.Color;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -14,10 +15,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
+import fr.upjv.BroadcastReceiver.LocationBroadcastReceiver;
+import fr.upjv.MainActivity;
 import fr.upjv.Model.Trip;
+import fr.upjv.Services.LocationTrackingService;
 import fr.upjv.miage_2023_android_projet.R;
 
 public class CreateTripActivity extends AppCompatActivity {
@@ -73,6 +75,7 @@ public class CreateTripActivity extends AppCompatActivity {
         Date date = new Date();
         this.editTextDateDebut.setText(dateFormatter.format(date));
         this.disableEditText(this.editTextDateDebut);
+
     }
 
     public void onClickReturn(View view) {
@@ -103,6 +106,10 @@ public class CreateTripActivity extends AppCompatActivity {
                 .set(data)
                 .addOnCompleteListener(task -> {
                     Toast.makeText(this, "Voyage créé", Toast.LENGTH_SHORT).show();
+
+                    // Redirect the user to home page
+                    Intent intentHome = new Intent(this, MainActivity.class);
+                    startActivity(intentHome);
                 });
     }
 
@@ -112,4 +119,5 @@ public class CreateTripActivity extends AppCompatActivity {
         editText.setCursorVisible(false);
         editText.setKeyListener(null);
     }
+
 }

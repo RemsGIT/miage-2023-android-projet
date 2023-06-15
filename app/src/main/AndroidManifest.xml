@@ -36,6 +36,9 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name="fr.upjv.Services.LocationTrackingService"
+            android:foregroundServiceType="location" />
     </application>
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>

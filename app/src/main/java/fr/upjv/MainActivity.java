@@ -1,8 +1,16 @@
 package fr.upjv;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -19,8 +27,10 @@ import org.w3c.dom.Text;
 import java.util.Map;
 import java.util.Objects;
 
+import fr.upjv.BroadcastReceiver.LocationBroadcastReceiver;
 import fr.upjv.Forms.CreateTripActivity;
 import fr.upjv.Model.Trip;
+import fr.upjv.Services.LocationTrackingService;
 import fr.upjv.miage_2023_android_projet.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         this.firebaseFirestore = FirebaseFirestore.getInstance();
-
     }
 
     @Override
@@ -75,12 +84,23 @@ public class MainActivity extends AppCompatActivity {
                             if(!dataSnapshot.getResult().isEmpty()) {
                                 this.currentTrip = dataSnapshot.getResult().toObjects(Trip.class).get(0);
 
+                                // If there's an active trip : check if location service is running if period is periodic
+                                if(!this.isLocationTrackingServiceRunning() && this.currentTrip.getPeriod() > 0) {
+                                    // check permissions
+                                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                                        // Permissions already accepted
+                                        startLocationListenerOnPeriod(this.currentTrip.getPeriod(), this.currentTrip.getDocID());
+                                    } else {
+                                        // Ask permissions to user
+                                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                                    }
+                                }
+
                             }
                         }
 
                         this.updateUI();
                     });
-
         }
     }
 
@@ -112,6 +132,42 @@ public class MainActivity extends AppCompatActivity {
             this.imageView.setImageResource(R.drawable.background_trip);
 
             this.btnActionTrip.setOnClickListener(v -> redirectToTrip());
+        }
+    }
+
+    /**
+     * Able the app to know if the location service is already running
+     * @return true if location tracking service is running
+     */
+    private Boolean isLocationTrackingServiceRunning () {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (LocationTrackingService.class.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void startLocationListenerOnPeriod(Integer period, String tripDocID) {
+        LocationBroadcastReceiver broadcastReceiver = new LocationBroadcastReceiver();
+        broadcastReceiver.setLocationService(new LocationTrackingService());
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("STOP_LOCATION_SERVICE");
+        registerReceiver(broadcastReceiver, intentFilter);
+
+        startService(new Intent(this, LocationTrackingService.class).putExtra("period", period).putExtra("tripdocid", tripDocID));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permissions accepted : start the service
+                startLocationListenerOnPeriod(this.currentTrip.getPeriod(), this.currentTrip.getDocID());
+            }
         }
     }
 }

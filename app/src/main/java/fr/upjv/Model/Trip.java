@@ -3,7 +3,9 @@ package fr.upjv.Model;
 import com.google.firebase.firestore.DocumentId;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Trip implements Serializable {
 
@@ -86,6 +88,7 @@ public class Trip implements Serializable {
     }
 
     public List<Coordinate> getCoordinates() {
+        // Filter coordinates by createdAt
         return coordinates;
     }
 
@@ -103,5 +106,15 @@ public class Trip implements Serializable {
                 ", period=" + period +
                 ", isActive=" + isActive +
                 '}';
+    }
+
+    public void clearCoordinates() {
+        this.coordinates.clear();
+    }
+
+    public void addAllCoordinates(List<Coordinate> coordinates) {
+        System.out.println("appel addAll");
+        System.out.println(coordinates.size());
+        coordinates.addAll(coordinates);
     }
 }

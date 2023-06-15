@@ -12,11 +12,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+
+import org.checkerframework.checker.units.qual.A;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import fr.upjv.Adapters.CoordinatesAdapter;
 import fr.upjv.Model.Coordinate;
@@ -25,11 +33,16 @@ import fr.upjv.miage_2023_android_projet.R;
 
 public class TripActivity extends AppCompatActivity {
 
+    private boolean firstLoad = true;
+
     private Trip trip;
 
     private RecyclerView recyclerView;
 
     private FirebaseFirestore firebaseFirestore;
+
+    private boolean isListenerActive = false;
+
 
     private TextView tripNameTextView;
     private TextView startDateTextView;
@@ -46,11 +59,18 @@ public class TripActivity extends AppCompatActivity {
     private Animation fromBottom;
     private Animation toBottom;
 
+    private CoordinatesAdapter coordinatesAdapter;
+
+    private List<Coordinate> coordinatesForRecylerView;
+    private ListenerRegistration coordinatesListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip);
+
+        coordinatesForRecylerView = new ArrayList<>();
 
         // Init floating action buttons
         this.initFloatingActionButton();
@@ -63,7 +83,7 @@ public class TripActivity extends AppCompatActivity {
         // Init firestore
         this.firebaseFirestore = FirebaseFirestore.getInstance();
 
-        this.trip =  (Trip) getIntent().getSerializableExtra("current_trip");
+        this.trip = (Trip) getIntent().getSerializableExtra("current_trip");
 
         this.recyclerView = findViewById(R.id.id_trip_recyclerView);
 
@@ -84,10 +104,44 @@ public class TripActivity extends AppCompatActivity {
 
         intent.putExtra("current_trip", this.trip);
 
-        startActivity(intent);;
+        startActivity(intent);
+        ;
     }
 
-    private void initCoordinates(){
+    private void initCoordinates() {
+
+        CollectionReference coordinatesRef = firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("coordinates");
+
+
+        coordinatesAdapter = new CoordinatesAdapter();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(coordinatesAdapter);
+
+
+        coordinatesListener = coordinatesRef.addSnapshotListener((snapshot, error) -> {
+            if(error != null) {
+                return;
+            }
+
+            List<Coordinate> coordinates = new ArrayList<>();
+            for (DocumentSnapshot document : snapshot.getDocuments()) {
+                Coordinate coordinate = document.toObject(Coordinate.class);
+                coordinates.add(coordinate);
+            }
+
+            System.out.println("maj");
+
+            trip.setCoordinates(coordinates);
+            coordinatesAdapter.setCoordinates(coordinates);
+            coordinatesAdapter.notifyDataSetChanged();
+
+        });
+
+
+        /*
         // Search coordinates on Firebase
         this.firebaseFirestore
                 .collection("voyages")
@@ -95,14 +149,54 @@ public class TripActivity extends AppCompatActivity {
                 .collection("coordinates")
                 .get()
                 .addOnCompleteListener(task -> {
-                    if(task.isSuccessful()) {
+                    if (task.isSuccessful()) {
                         this.trip.setCoordinates(task.getResult().toObjects(Coordinate.class));
+
+                        //this.addFirebaseCoordinatesListener();
                     }
 
-                    CoordinatesAdapter ca = new CoordinatesAdapter(this.trip.getCoordinates());
+                    System.out.println(this.trip.getCoordinates().size());
+                    this.coordinatesAdapter = new CoordinatesAdapter(this.trip.getCoordinates());
                     this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                    this.recyclerView.setAdapter(ca);
+                    this.recyclerView.setAdapter(this.coordinatesAdapter);
                 });
+
+         */
+        /*
+        this.firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("coordinates")
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        return;
+                    }
+
+                    System.out.println("load coordinates firebase");
+                    List<Coordinate> coordinatesUpdated = value.toObjects(Coordinate.class);
+
+                    this.trip.setCoordinates(new ArrayList<>());
+                    if(firstLoad) {
+                        this.trip.setCoordinates(coordinatesUpdated);
+                        this.coordinatesAdapter = new CoordinatesAdapter(this.trip.getCoordinates());
+                        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                        this.recyclerView.setAdapter(this.coordinatesAdapter);
+                    }
+                    else {
+                        this.trip.clearCoordinates();
+                        this.trip.addAllCoordinates(coordinatesUpdated);
+
+                        System.out.println("object coordiates" + this.trip.getCoordinates().size());
+
+                        // Notify changes
+                        this.coordinatesAdapter.notifyDataSetChanged();
+                    }
+                    firstLoad = false;
+                });
+
+         */
+
+        //this.addFirebaseCoordinatesListener();
     }
 
     public void onClickStopTrip(View view) {
@@ -114,12 +208,16 @@ public class TripActivity extends AppCompatActivity {
                 .document(trip.getDocID())
                 .set(trip)
                 .addOnCompleteListener(task -> {
-                    if(task.isSuccessful()) {
+                    if (task.isSuccessful()) {
                         Toast.makeText(this, "Le voyage est terminé", Toast.LENGTH_SHORT).show();
 
                         // Redirect user to home page
                         Intent mainIntent = new Intent(this, MainActivity.class);
                         startActivity(mainIntent);
+
+                        // Stop the location listener
+                        Intent stopIntent = new Intent("STOP_LOCATION_SERVICE");
+                        sendBroadcast(stopIntent);
                     }
                 });
     }
@@ -158,12 +256,11 @@ public class TripActivity extends AppCompatActivity {
     }
 
     private void setVisibility(Boolean clicked) {
-        if(!clicked) {
+        if (!clicked) {
             this.fabCamera.setVisibility(View.VISIBLE);
             this.fabMail.setVisibility(View.VISIBLE);
             this.fabPosition.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             this.fabCamera.setVisibility(View.INVISIBLE);
             this.fabMail.setVisibility(View.INVISIBLE);
             this.fabPosition.setVisibility(View.INVISIBLE);
@@ -171,14 +268,13 @@ public class TripActivity extends AppCompatActivity {
     }
 
     private void setAnimation(Boolean clicked) {
-        if(!clicked) {
+        if (!clicked) {
             this.fabCamera.startAnimation(fromBottom);
             this.fabMail.startAnimation(fromBottom);
             this.fabPosition.startAnimation(fromBottom);
 
             this.fabMain.startAnimation(rotateOpen);
-        }
-        else {
+        } else {
             this.fabCamera.startAnimation(toBottom);
             this.fabMail.startAnimation(toBottom);
             this.fabPosition.startAnimation(toBottom);
@@ -192,11 +288,36 @@ public class TripActivity extends AppCompatActivity {
             this.fabCamera.setClickable(true);
             this.fabMail.setClickable(true);
             this.fabPosition.setClickable(true);
-        }
-        else {
+        } else {
             this.fabCamera.setClickable(false);
             this.fabMail.setClickable(false);
             this.fabPosition.setClickable(false);
         }
+    }
+
+    private void addFirebaseCoordinatesListener() {
+        if (isListenerActive) {
+            return; // Si le listener est déjà actif, évitez de l'ajouter à nouveau
+        }
+        isListenerActive = true;
+
+        System.out.println("START LISTENER");
+        this.firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("coordinates")
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        return;
+                    }
+
+                    System.out.println("ok");
+
+                    List<Coordinate> coordinatesUpdated = value.toObjects(Coordinate.class);
+                    this.trip.addAllCoordinates(coordinatesUpdated);
+
+                    // Notify changes
+                    this.coordinatesAdapter.notifyDataSetChanged();
+                });
     }
 }
