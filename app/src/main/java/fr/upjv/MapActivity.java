@@ -3,19 +3,24 @@ package fr.upjv;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
+import com.squareup.picasso.Picasso;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
@@ -32,6 +37,9 @@ import fr.upjv.Model.Coordinate;
 import fr.upjv.Model.Trip;
 import fr.upjv.miage_2023_android_projet.R;
 
+
+// TODO LIRE CI DESSOUS
+// DANS TRIP IL FAUT UNE LISTE DE <PICTURES> AUSSI COMME POUR COORDINATES: POUVOIR LES RÉCUPÉRER COMME COORDINATES
 public class MapActivity extends AppCompatActivity implements LocationListener {
 
     private LocationManager locationManager;
@@ -185,6 +193,10 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
     }
 
+    private void showAllPictures() {
+
+    }
+
     private void displayLineBetweenCoordinates(List<GeoPoint> points) {
         Polyline line = new Polyline();
         line.setPoints(points);
@@ -192,5 +204,27 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         line.setWidth(5f);
 
         map.getOverlayManager().add(line);
+    }
+
+    private void openPhoto(Uri imageUri) {
+        // Search
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(imageUri, "image/*");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // Vérifiez si l'application de galerie ou de visionneuse d'images est disponible
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            // Aucune application de galerie ou de visionneuse d'images n'est disponible
+            Toast.makeText(this, "Aucune application de galerie trouvée", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void testImageCloud() {
+        String url = "https://firebasestorage.googleapis.com/v0/b/rgtravel-f8d2c.appspot.com/o/images%2Fimage5126787236995998348.jpg?alt=media&token=305fbb36-a2d8-49c6-bc19-447f83dd51cd";
+
+        //Picasso.get().load(url).into(this.imageView);
     }
 }

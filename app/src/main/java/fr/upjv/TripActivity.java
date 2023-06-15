@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
@@ -31,9 +32,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.checkerframework.checker.units.qual.A;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +48,7 @@ import java.util.List;
 
 import fr.upjv.Adapters.CoordinatesAdapter;
 import fr.upjv.Model.Coordinate;
+import fr.upjv.Model.Picture;
 import fr.upjv.Model.Trip;
 import fr.upjv.Utils.SerializableGeoPoint;
 import fr.upjv.Utils.SerializableTimestamp;
@@ -51,7 +59,11 @@ public class TripActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
 
+    // FIRESTORE VARS
     private FirebaseFirestore firebaseFirestore;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageReference;
+
 
     private TextView tripNameTextView;
     private TextView startDateTextView;
@@ -86,6 +98,8 @@ public class TripActivity extends AppCompatActivity {
 
         // Init firestore
         this.firebaseFirestore = FirebaseFirestore.getInstance();
+        this.firebaseStorage = FirebaseStorage.getInstance();
+        this.storageReference = firebaseStorage.getReference();
 
         this.trip = (Trip) getIntent().getSerializableExtra("current_trip");
 
@@ -316,9 +330,80 @@ public class TripActivity extends AppCompatActivity {
             // La photo a été capturée, faites quelque chose avec les données de la photo
             Bitmap photo = (Bitmap) data.getExtras().get("data");
 
-            System.out.println("photo prise");
-            System.out.println(photo);
-            // Faites quelque chose avec la photo capturée
+            // Convertir le Bitmap en fichier temporaire
+            File tempFile = saveBitmapToFile(photo);
+
+            // Obtenir l'URI du fichier temporaire
+            Uri uri = Uri.fromFile(tempFile);
+
+            this.saveImageToCloudStorage(uri);
         }
+    }
+
+    private void saveImageToCloudStorage(Uri imageUri) {
+        if(imageUri != null) {
+
+            System.out.println("ok");
+            // Create a ref of the file in Firebase Storage
+            StorageReference imageRef = storageReference.child("images/"+imageUri.getLastPathSegment());
+
+            UploadTask uploadTask = imageRef.putFile(imageUri);
+
+            uploadTask.addOnCompleteListener(taskSnapshot -> {
+                if(taskSnapshot.isSuccessful()) {
+                    imageRef.getDownloadUrl().addOnCompleteListener(uri -> {
+                        if(uri.isSuccessful()) {
+
+                            // get user's location
+                            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                            String provider = LocationManager.GPS_PROVIDER;
+                            if (locationManager != null && locationManager.isProviderEnabled(provider)) {
+                                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                                    Location lastKnownLocation = locationManager.getLastKnownLocation(provider);
+                                    try {
+                                        double latitude = lastKnownLocation.getLatitude();
+                                        double longitude = lastKnownLocation.getLongitude();
+
+                                        GeoPoint point = new GeoPoint(latitude, longitude);
+                                        String imageURL = uri.getResult().toString();
+
+                                        Picture picture = new Picture(imageURL, new SerializableGeoPoint(point));
+
+                                        // Store image url in firestore
+                                        this.firebaseFirestore
+                                                .collection("voyages")
+                                                .document(trip.getDocID())
+                                                .collection("pictures")
+                                                .add(picture)
+                                                .addOnCompleteListener(task -> {
+                                                    System.out.println(task.isSuccessful() ? "photo ok" : "photo pas ok");
+                                                });
+                                    }
+                                    catch (Exception e) { }
+
+                                }
+                            }
+                        }
+                    });
+                }
+            }).addOnFailureListener(error -> {
+                error.printStackTrace();
+            });
+        }
+    }
+
+    private File saveBitmapToFile(Bitmap bitmap) {
+        File file = null;
+        try {
+            file = File.createTempFile("image", ".jpg", getCacheDir());
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
     }
 }
