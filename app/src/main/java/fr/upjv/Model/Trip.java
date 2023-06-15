@@ -10,6 +10,8 @@ import java.util.Objects;
 public class Trip implements Serializable {
 
     private @DocumentId String docID;
+
+    private String userID;
     private String name;
     private String start;
     private String end;
@@ -21,7 +23,7 @@ public class Trip implements Serializable {
 
     public Trip() { }
 
-    public Trip(String docID, String name, String start, String end, Integer period, Boolean isActive, List<Coordinate> coordinates) {
+    public Trip(String docID, String name,String userID, String start, String end, Integer period, Boolean isActive, List<Coordinate> coordinates) {
         this.docID = docID;
         this.name = name;
         this.start = start;
@@ -31,7 +33,7 @@ public class Trip implements Serializable {
         this.coordinates = coordinates;
     }
 
-    public Trip(String name, String start, String end, Integer period, Boolean isActive) {
+    public Trip(String name, String start,String userID, String end, Integer period, Boolean isActive) {
         this.name = name;
         this.start = start;
         this.end = end;
@@ -94,6 +96,14 @@ public class Trip implements Serializable {
 
     public void setCoordinates(List<Coordinate> coordinates) {
         this.coordinates = coordinates;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 
     @Override

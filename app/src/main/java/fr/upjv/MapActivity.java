@@ -158,6 +158,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
     }
 
     public void onClickReturn(View view) {
+        System.out.println("return");
         finish();
     }
 

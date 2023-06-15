@@ -11,6 +11,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -32,6 +33,7 @@ public class CreateTripActivity extends AppCompatActivity {
     private EditText editTextDateFin;
 
     private FirebaseFirestore firebaseFirestore;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +48,7 @@ public class CreateTripActivity extends AppCompatActivity {
 
         // Init firebase
         this.firebaseFirestore = FirebaseFirestore.getInstance();
+        this.mAuth = FirebaseAuth.getInstance();
 
         // On change slider
         this.periodSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -88,7 +91,9 @@ public class CreateTripActivity extends AppCompatActivity {
         String fin = this.editTextDateFin.getText().toString();
         Integer period = this.periodSeekBar.getProgress();
 
-        Trip newTrip = new Trip(name, debut, fin, period, true);
+        // get mAuth et add uuid
+
+        Trip newTrip = new Trip(name, debut,mAuth.getCurrentUser().getUid(), fin, period, true);
 
         Toast.makeText(this, "Soumission du formulaire", Toast.LENGTH_SHORT).show();
         System.out.println(name);

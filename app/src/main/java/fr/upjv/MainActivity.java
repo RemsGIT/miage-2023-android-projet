@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
             this.firebaseFirestore
                     .collection("voyages")
                     .whereEqualTo("isActive", true)
+                    .whereEqualTo("userID", mAuth.getCurrentUser().getUid())
                     .get()
                     .addOnCompleteListener(dataSnapshot -> {
                         if(dataSnapshot.isSuccessful()) {
@@ -169,5 +171,15 @@ public class MainActivity extends AppCompatActivity {
                 startLocationListenerOnPeriod(this.currentTrip.getPeriod(), this.currentTrip.getDocID());
             }
         }
+    }
+
+    public void onClickLogout(View view) {
+        mAuth.signOut();
+
+        Toast.makeText(this, "Déconnexion", Toast.LENGTH_SHORT).show();
+        
+        // Redirect user to login page after logout
+        Intent intentLogin = new Intent(this, LoginActivity.class);
+        startActivity(intentLogin);
     }
 }

@@ -15,6 +15,7 @@
         android:layout_marginBottom="16dp"
         android:background="#FFFFFF"
         android:clickable="true"
+        android:onClick="onClickLogout"
         android:scaleType="center"
         android:tint="#FFFFFF"
         app:backgroundTint="#BADBD0"

@@ -6,65 +6,43 @@
     android:layout_height="match_parent"
     tools:context="fr.upjv.LoginActivity">
 
+    <EditText
+        android:id="@+id/editTextLogin_email"
+        android:layout_width="0dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="62dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="62dp"
+        android:ems="10"
+        android:inputType="textEmailAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewLogin_email" />
+
     <TextView
-        android:id="@+id/textViewLogin_email"
+        android:id="@+id/textViewLogin_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="3dp"
-        android:layout_marginTop="79dp"
-        android:text="Email"
-        app:layout_constraintStart_toStartOf="@+id/editTextLogin_email"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/btnLogin_register"
-        android:layout_width="278dp"
-        android:layout_height="47dp"
-        android:layout_marginBottom="231dp"
-        android:onClick="handleClickLogin"
-        android:text="Se connecter"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/textView2" />
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="12dp"
+        android:text="Mot de passe"
+        app:layout_constraintBottom_toTopOf="@+id/editTextLogin_password"
+        app:layout_constraintStart_toStartOf="@+id/editTextLogin_password" />
 
     <EditText
         android:id="@+id/editTextLogin_password"
         android:layout_width="0dp"
         android:layout_height="47dp"
         android:layout_marginStart="62dp"
-        android:layout_marginTop="155dp"
         android:layout_marginEnd="62dp"
-        android:layout_marginBottom="154dp"
+        android:layout_marginBottom="80dp"
         android:ems="10"
         android:inputType="textPassword"
         app:layout_constraintBottom_toBottomOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textViewLogin_email" />
-
-    <EditText
-        android:id="@+id/editTextLogin_email"
-        android:layout_width="0dp"
-        android:layout_height="47dp"
-        android:layout_marginStart="62dp"
-        android:layout_marginTop="34dp"
-        android:layout_marginEnd="62dp"
-        android:layout_marginBottom="46dp"
-        android:ems="10"
-        android:inputType="textEmailAddress"
-        app:layout_constraintBottom_toTopOf="@+id/textViewLogin_password"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textViewLogin_email" />
-
-    <TextView
-        android:id="@+id/textViewLogin_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="3dp"
-        android:layout_marginBottom="9dp"
-        android:text="Mot de passe"
-        app:layout_constraintBottom_toTopOf="@+id/editTextLogin_password"
-        app:layout_constraintStart_toStartOf="@+id/editTextLogin_password" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/textView2"
@@ -79,13 +57,45 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="17dp"
-        android:layout_marginBottom="18dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="8dp"
         android:backgroundTint="#FFFFFF"
         android:onClick="handleGoToRegister"
         android:text="Je m'inscris"
         android:textColor="#000000"
         app:layout_constraintBottom_toTopOf="@+id/btnLogin_register"
         app:layout_constraintStart_toEndOf="@+id/textView2" />
+
+    <Button
+        android:id="@+id/btnLogin_register"
+        android:layout_width="278dp"
+        android:layout_height="47dp"
+        android:layout_marginBottom="80dp"
+        android:onClick="handleClickLogin"
+        android:text="Se connecter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/textView2" />
+
+    <TextView
+        android:id="@+id/textViewLogin_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="344dp"
+        android:text="Email"
+        app:layout_constraintStart_toStartOf="@+id/editTextLogin_email"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="match_parent"
+        android:layout_height="307dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        app:layout_constraintBottom_toTopOf="@+id/textViewLogin_email"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/login_bg" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
