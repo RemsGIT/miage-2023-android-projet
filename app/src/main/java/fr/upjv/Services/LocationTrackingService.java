@@ -1,29 +1,37 @@
 package fr.upjv.Services;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.Date;
+import java.util.UUID;
 
 import fr.upjv.Model.Coordinate;
 import fr.upjv.Utils.SerializableGeoPoint;
 import fr.upjv.Utils.SerializableTimestamp;
+import fr.upjv.miage_2023_android_projet.R;
 
 public class LocationTrackingService extends Service {
     private static final long INTERVAL = 10000; // Interval in milliseconds
@@ -83,12 +91,13 @@ public class LocationTrackingService extends Service {
             public void onProviderDisabled(String provider) {}
         };
 
+        createNotificationChannel();
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Mise à jour toutes les X minutes
-
         this.period = intent.getIntExtra("period", 5) * 60 * 1000;
         this.tripDocID = intent.getStringExtra("tripdocid");
 
@@ -100,6 +109,15 @@ public class LocationTrackingService extends Service {
                 handler.postDelayed(this, period); // Utilisez simplement la période en millisecondes
             }
         });
+
+        // Service background
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "my_channel_id")
+                .setContentTitle("Localisation")
+                .setContentText("Enregistrement de votre position")
+                .setSmallIcon(R.drawable.app_icon);
+        Notification notification = notificationBuilder.build();
+        startForeground(1, notification);
+
         return START_STICKY;
     }
 
@@ -107,6 +125,7 @@ public class LocationTrackingService extends Service {
     public void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(runnable);
+        stopForeground(true);
         stopLocationUpdates();
     }
 
@@ -125,5 +144,29 @@ public class LocationTrackingService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+
+            // Vérifier si le canal de notification existe déjà
+            String channelId = "my_channel_id";
+            if (notificationManager.getNotificationChannel(channelId) == null) {
+                // Créer le canal de notification
+                CharSequence channelName = "My Channel";
+                String channelDescription = "Description of my channel";
+                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+
+                NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
+                channel.setDescription(channelDescription);
+
+                channel.enableLights(false);
+                channel.enableVibration(false);
+
+                // Associer le canal de notification au gestionnaire de notifications
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
     }
 }
