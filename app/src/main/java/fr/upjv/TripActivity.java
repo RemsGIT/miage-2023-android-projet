@@ -16,6 +16,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -59,14 +61,16 @@ public class TripActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
 
+
     // FIRESTORE VARS
     private FirebaseFirestore firebaseFirestore;
     private FirebaseStorage firebaseStorage;
     private StorageReference storageReference;
 
-
     private TextView tripNameTextView;
     private TextView startDateTextView;
+
+    private ActivityResultLauncher<Intent> activityLauncher;
 
     // FLOATING ACTION BUTTONS
     private FloatingActionButton fabMain;
@@ -205,6 +209,9 @@ public class TripActivity extends AppCompatActivity {
         this.rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim);
         this.fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim);
         this.toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim);
+
+        // Activity launcher for camera
+        this.initActivityLauncher();
     }
 
     public void onClickFabMain(View view) {
@@ -216,8 +223,6 @@ public class TripActivity extends AppCompatActivity {
     }
 
     public void onClickFabCamera(View view) {
-        Toast.makeText(this, "Ouvrir la camera", Toast.LENGTH_SHORT).show();
-
         // Vérifier si la permission de la caméra est déjà accordée
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             // La permission de la caméra n'est pas accordée, demander à l'utilisateur de l'accorder
@@ -331,24 +336,7 @@ public class TripActivity extends AppCompatActivity {
 
     private void openCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, 1);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            // La photo a été capturée, faites quelque chose avec les données de la photo
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-
-            // Convertir le Bitmap en fichier temporaire
-            File tempFile = saveBitmapToFile(photo);
-
-            // Obtenir l'URI du fichier temporaire
-            Uri uri = Uri.fromFile(tempFile);
-
-            this.saveImageToCloudStorage(uri);
-        }
+        this.activityLauncher.launch(intent);
     }
 
     private void saveImageToCloudStorage(Uri imageUri) {
@@ -416,5 +404,26 @@ public class TripActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return file;
+    }
+
+    private void initActivityLauncher() {
+        this.activityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult()
+                ,
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // La photo a été capturée, faites quelque chose avec les données de la photo
+                        Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+
+                        // Convertir le Bitmap en fichier temporaire
+                        File tempFile = saveBitmapToFile(photo);
+
+                        // Obtenir l'URI du fichier temporaire
+                        Uri uri = Uri.fromFile(tempFile);
+
+                        this.saveImageToCloudStorage(uri);
+                    }
+                }
+        );
     }
 }

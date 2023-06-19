@@ -2,10 +2,16 @@ package fr.upjv;
 
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -13,7 +19,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -204,10 +213,19 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
             GeoPoint point = new GeoPoint(latitude, longitude);
 
-            // augmenter taille icon
-
             pictureMarker.setPosition(point);
-            pictureMarker.setIcon(getResources().getDrawable(R.drawable.ic_camera));
+
+            pictureMarker.setIcon(getDrawable(R.drawable.ic_camera));
+
+            pictureMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+
+            // Open picture on click on the icon
+            pictureMarker.setOnMarkerClickListener((marker, mapView) -> {
+                // Appeler votre fonction ici
+                showImagePopup(picture.getImageUrl());
+                return true;
+            });
+
             map.getOverlays().add(pictureMarker);
         }
     }
@@ -241,5 +259,32 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         String url = "https://firebasestorage.googleapis.com/v0/b/rgtravel-f8d2c.appspot.com/o/images%2Fimage5126787236995998348.jpg?alt=media&token=305fbb36-a2d8-49c6-bc19-447f83dd51cd";
 
         //Picasso.get().load(url).into(this.imageView);
+    }
+
+    private void showImagePopup(String imageUrl) {
+        Dialog dialog = new Dialog(MapActivity.this);
+        dialog.setContentView(R.layout.popup_image);
+
+        ImageView imageView = dialog.findViewById(R.id.id_picture_popup_image);
+
+        // Obtenir les dimensions de l'écran
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenWidth = displayMetrics.widthPixels;
+        int screenHeight = displayMetrics.heightPixels;
+
+        // Calculer la taille souhaitée (90% de la taille de l'écran)
+        int targetWidth = (int) (screenWidth * 0.8);
+
+        // Appliquer les nouvelles dimensions à l'ImageView
+        ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
+        layoutParams.width = targetWidth;
+
+        imageView.setLayoutParams(layoutParams);
+
+        Picasso.get().load(imageUrl).into(imageView);
+
+
+        dialog.show();
     }
 }
