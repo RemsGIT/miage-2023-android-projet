@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -86,6 +87,7 @@ public class TripActivity extends AppCompatActivity {
 
     private CoordinatesAdapter coordinatesAdapter;
 
+    private ListenerRegistration coordinatesListenerRegistration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,10 +111,6 @@ public class TripActivity extends AppCompatActivity {
 
         this.recyclerView = findViewById(R.id.id_trip_recyclerView);
 
-        // Load coordinates of a trip
-        this.initCoordinates();
-        this.loadPictures();
-
         // Rename text view
         this.tripNameTextView.setText(this.trip.getName());
 
@@ -122,57 +120,20 @@ public class TripActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Load coordinates of a trip
+        this.initCoordinates();
+        this.loadPictures();
+    }
+
     public void onClickRedirectToMap(View view) {
         Intent intent = new Intent(this, MapActivity.class);
 
         intent.putExtra("current_trip", this.trip);
-
         startActivity(intent);
-    }
-
-    private void initCoordinates() {
-
-        Query coordinatesQuery = firebaseFirestore
-                .collection("voyages")
-                .document(trip.getDocID())
-                .collection("coordinates")
-                .orderBy("createdAt", Query.Direction.ASCENDING);
-
-
-        coordinatesAdapter = new CoordinatesAdapter();
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(coordinatesAdapter);
-
-
-        coordinatesQuery.addSnapshotListener((snapshot, error) -> {
-            if (error != null) {
-                return;
-            }
-
-            List<Coordinate> coordinates = new ArrayList<>();
-            for (DocumentSnapshot document : snapshot.getDocuments()) {
-                Coordinate coordinate = document.toObject(Coordinate.class);
-                coordinates.add(coordinate);
-            }
-
-            System.out.println("maj");
-
-            trip.setCoordinates(coordinates);
-            coordinatesAdapter.setCoordinates(coordinates);
-            coordinatesAdapter.notifyDataSetChanged();
-        });
-    }
-    private void loadPictures() {
-        this.firebaseFirestore
-                .collection("voyages")
-                .document(trip.getDocID())
-                .collection("pictures")
-                .get()
-                .addOnCompleteListener(task -> {
-                   if(task.isSuccessful()) {
-                       this.trip.setPictures(task.getResult().toObjects(Picture.class));
-                   }
-                });
     }
 
     public void onClickStopTrip(View view) {
@@ -196,22 +157,6 @@ public class TripActivity extends AppCompatActivity {
                         sendBroadcast(stopIntent);
                     }
                 });
-    }
-
-    private void initFloatingActionButton() {
-        this.fabMain = findViewById(R.id.id_trip_fab_main);
-        this.fabCamera = findViewById(R.id.id_trip_fab_camera);
-        this.fabMail = findViewById(R.id.id_trip_fab_mail);
-        this.fabPosition = findViewById(R.id.id_trip_fab_position);
-
-        // Init animations
-        this.rotateOpen = AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim);
-        this.rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim);
-        this.fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim);
-        this.toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim);
-
-        // Activity launcher for camera
-        this.initActivityLauncher();
     }
 
     public void onClickFabMain(View view) {
@@ -278,6 +223,84 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            // Vérifier si la permission de la caméra a été accordée
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // La permission de la caméra a été accordée, ouvrir la caméra
+                openCamera();
+            } else {
+                // La permission de la caméra a été refusée, afficher un message d'erreur ou prendre une autre action
+                Toast.makeText(this, "Permission de la caméra refusée", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    private void initCoordinates() {
+
+        Query coordinatesQuery = firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("coordinates")
+                .orderBy("createdAt", Query.Direction.ASCENDING);
+
+
+        coordinatesAdapter = new CoordinatesAdapter();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(coordinatesAdapter);
+
+
+        this.coordinatesListenerRegistration = coordinatesQuery.addSnapshotListener((snapshot, error) -> {
+            if (error != null) {
+                return;
+            }
+
+            List<Coordinate> coordinates = new ArrayList<>();
+            for (DocumentSnapshot document : snapshot.getDocuments()) {
+                Coordinate coordinate = document.toObject(Coordinate.class);
+                coordinates.add(coordinate);
+            }
+
+            System.out.println("maj");
+
+            trip.setCoordinates(coordinates);
+            coordinatesAdapter.setCoordinates(coordinates);
+            coordinatesAdapter.notifyDataSetChanged();
+        });
+    }
+    private void loadPictures() {
+        this.firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("pictures")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()) {
+                        this.trip.setPictures(task.getResult().toObjects(Picture.class));
+                    }
+                });
+    }
+
+    private void initFloatingActionButton() {
+        this.fabMain = findViewById(R.id.id_trip_fab_main);
+        this.fabCamera = findViewById(R.id.id_trip_fab_camera);
+        this.fabMail = findViewById(R.id.id_trip_fab_mail);
+        this.fabPosition = findViewById(R.id.id_trip_fab_position);
+
+        // Init animations
+        this.rotateOpen = AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim);
+        this.rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim);
+        this.fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim);
+        this.toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim);
+
+        // Activity launcher for camera
+        this.initActivityLauncher();
+    }
+
     private void setVisibility(Boolean clicked) {
         if (!clicked) {
             this.fabCamera.setVisibility(View.VISIBLE);
@@ -318,22 +341,6 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == 1) {
-            // Vérifier si la permission de la caméra a été accordée
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // La permission de la caméra a été accordée, ouvrir la caméra
-                openCamera();
-            } else {
-                // La permission de la caméra a été refusée, afficher un message d'erreur ou prendre une autre action
-                Toast.makeText(this, "Permission de la caméra refusée", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
     private void openCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         this.activityLauncher.launch(intent);
@@ -342,7 +349,6 @@ public class TripActivity extends AppCompatActivity {
     private void saveImageToCloudStorage(Uri imageUri) {
         if(imageUri != null) {
 
-            System.out.println("ok");
             // Create a ref of the file in Firebase Storage
             StorageReference imageRef = storageReference.child("images/"+imageUri.getLastPathSegment());
 
@@ -425,5 +431,12 @@ public class TripActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (coordinatesListenerRegistration != null) {
+            coordinatesListenerRegistration.remove();
+        }
     }
 }

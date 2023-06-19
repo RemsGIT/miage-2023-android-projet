@@ -29,6 +29,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
 
 import org.osmdroid.api.IMapController;
@@ -36,11 +40,15 @@ import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import fr.upjv.Model.Coordinate;
 import fr.upjv.Model.Picture;
@@ -49,7 +57,9 @@ import fr.upjv.miage_2023_android_projet.R;
 
 
 // TODO LIRE CI DESSOUS
-// DANS TRIP IL FAUT UNE LISTE DE <PICTURES> AUSSI COMME POUR COORDINATES: POUVOIR LES RÉCUPÉRER COMME COORDINATES
+// FONCTION APPELÉ QUAND REFRESH COORDONNÉES OU PICTURES
+// POUR APRES LE CLEAR DE LA MAP: TOUT REMETTRE
+// REMETTRE AUSSI L'ICONE DU USER POSITION QD REFRESH
 public class MapActivity extends AppCompatActivity implements LocationListener {
 
     private LocationManager locationManager;
@@ -59,12 +69,15 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
     private Trip trip;
 
-    private Location userLocation;
+    private FirebaseFirestore firebaseFirestore;
+    private ListenerRegistration coordinatesListenerRegistration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        this.firebaseFirestore = FirebaseFirestore.getInstance();
 
         // Init location manager
         this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -96,8 +109,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
                 mapController.setCenter(geoPoint);
 
                 this.createMarkerAtUserPosition(geoPoint);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // Position unknowned
                 System.out.println(e.getMessage());
             }
@@ -145,8 +157,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
                         && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
                 }
-            } else {
-                // L'autorisation de localisation a été refusée
             }
         }
     }
@@ -166,7 +176,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         locationManager.removeUpdates(this);
     }
 
-    private void createMarkerAtUserPosition(GeoPoint geoPoint){
+    private void createMarkerAtUserPosition(GeoPoint geoPoint) {
         // Add marker at user's position
         Marker userMarker = new Marker(map);
         userMarker.setPosition(geoPoint);
@@ -182,25 +192,52 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
     }
 
     private void showAllCoordinates() {
-        List<GeoPoint> points = new ArrayList<>();
-        for (Coordinate coordinate : trip.getCoordinates()) {
-            Marker pointMarker = new Marker(map);
+        Query coordinatesQuery = firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("coordinates")
+                .orderBy("createdAt", Query.Direction.ASCENDING);
 
-            Double latitude = coordinate.getCoords().getLatitude();
-            Double longitude = coordinate.getCoords().getLongitude();
+        this.coordinatesListenerRegistration = coordinatesQuery.addSnapshotListener((snapshot, error) -> {
+            if (error != null) {
+                return;
+            }
+
+            this.trip.setCoordinates(snapshot.toObjects(Coordinate.class));
+
+            // Clear the map and create markers
+            map.getOverlays().clear();
+
+            List<GeoPoint> points = new ArrayList<>();
+            for (Coordinate coordinate : trip.getCoordinates()) {
+                Marker pointMarker = new Marker(map);
+
+                Double latitude = coordinate.getCoords().getLatitude();
+                Double longitude = coordinate.getCoords().getLongitude();
 
 
-            GeoPoint point = new GeoPoint(latitude, longitude);
+                GeoPoint point = new GeoPoint(latitude, longitude);
 
-            pointMarker.setPosition(point);
-            pointMarker.setTitle("Position enregistrée \npendant votre voyage");
-            pointMarker.setIcon(getResources().getDrawable(R.drawable.red_circle_svgrepo_com));
-            pointMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_TOP);
-            map.getOverlays().add(pointMarker);
+                pointMarker.setPosition(point);
+                pointMarker.setTitle("Position enregistrée \npendant votre voyage");
+                pointMarker.setIcon(getResources().getDrawable(R.drawable.red_circle_svgrepo_com));
+                pointMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_TOP);
+                map.getOverlays().add(pointMarker);
 
-            points.add(point);
-        }
-        this.displayLineBetweenCoordinates(points);
+                points.add(point);
+
+                pointMarker.setOnMarkerClickListener(((marker, mapView) -> {
+                    System.out.println("clear");
+                    map.getOverlays().clear();
+                    return true;
+                }));
+            }
+            this.displayLineBetweenCoordinates(points);
+
+            // Refresh map
+            map.invalidate();
+        });
+
 
     }
 
@@ -239,28 +276,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         map.getOverlayManager().add(line);
     }
 
-    private void openPhoto(Uri imageUri) {
-        // Search
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(imageUri, "image/*");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        // Vérifiez si l'application de galerie ou de visionneuse d'images est disponible
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        } else {
-            // Aucune application de galerie ou de visionneuse d'images n'est disponible
-            Toast.makeText(this, "Aucune application de galerie trouvée", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    private void testImageCloud() {
-        String url = "https://firebasestorage.googleapis.com/v0/b/rgtravel-f8d2c.appspot.com/o/images%2Fimage5126787236995998348.jpg?alt=media&token=305fbb36-a2d8-49c6-bc19-447f83dd51cd";
-
-        //Picasso.get().load(url).into(this.imageView);
-    }
-
     private void showImagePopup(String imageUrl) {
         Dialog dialog = new Dialog(MapActivity.this);
         dialog.setContentView(R.layout.popup_image);
@@ -271,7 +286,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
-        int screenHeight = displayMetrics.heightPixels;
 
         // Calculer la taille souhaitée (90% de la taille de l'écran)
         int targetWidth = (int) (screenWidth * 0.8);
@@ -286,5 +300,13 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
 
         dialog.show();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (coordinatesListenerRegistration != null) {
+            coordinatesListenerRegistration.remove();
+        }
     }
 }
