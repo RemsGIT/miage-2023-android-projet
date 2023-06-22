@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
@@ -22,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,6 +45,7 @@ import org.checkerframework.checker.units.qual.A;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -88,6 +91,7 @@ public class TripActivity extends AppCompatActivity {
     private CoordinatesAdapter coordinatesAdapter;
 
     private ListenerRegistration coordinatesListenerRegistration;
+    private ListenerRegistration picturesListenerRegistration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +131,18 @@ public class TripActivity extends AppCompatActivity {
         // Load coordinates of a trip
         this.initCoordinates();
         this.loadPictures();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (coordinatesListenerRegistration != null) {
+            coordinatesListenerRegistration.remove();
+        }
+
+        if(picturesListenerRegistration != null) {
+            picturesListenerRegistration.remove();
+        }
     }
 
     public void onClickRedirectToMap(View view) {
@@ -180,6 +196,7 @@ public class TripActivity extends AppCompatActivity {
 
     public void onClickFabMail(View view) {
         Toast.makeText(this, "Envoyer un mail", Toast.LENGTH_SHORT).show();
+        this.exportCoordinatesToGPXAndKML();
     }
 
     public void onClickFabPosition(View view) {
@@ -253,7 +270,7 @@ public class TripActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(coordinatesAdapter);
 
-
+        // Listener for coordinates
         this.coordinatesListenerRegistration = coordinatesQuery.addSnapshotListener((snapshot, error) -> {
             if (error != null) {
                 return;
@@ -271,18 +288,21 @@ public class TripActivity extends AppCompatActivity {
             coordinatesAdapter.setCoordinates(coordinates);
             coordinatesAdapter.notifyDataSetChanged();
         });
+
     }
     private void loadPictures() {
-        this.firebaseFirestore
+        Query picturesQuery = firebaseFirestore
                 .collection("voyages")
                 .document(trip.getDocID())
-                .collection("pictures")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if(task.isSuccessful()) {
-                        this.trip.setPictures(task.getResult().toObjects(Picture.class));
-                    }
-                });
+                .collection("pictures");
+
+        this.picturesListenerRegistration = picturesQuery.addSnapshotListener((snapshot, error) -> {
+            List<Picture> picturesList = snapshot.toObjects(Picture.class);
+
+            trip.setPictures(picturesList);
+        });
+
+
     }
 
     private void initFloatingActionButton() {
@@ -298,7 +318,7 @@ public class TripActivity extends AppCompatActivity {
         this.toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim);
 
         // Activity launcher for camera
-        this.initActivityLauncher();
+        this.initActivityCameraLauncher();
     }
 
     private void setVisibility(Boolean clicked) {
@@ -412,7 +432,7 @@ public class TripActivity extends AppCompatActivity {
         return file;
     }
 
-    private void initActivityLauncher() {
+    private void initActivityCameraLauncher() {
         this.activityLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult()
                 ,
@@ -432,11 +452,107 @@ public class TripActivity extends AppCompatActivity {
                 }
         );
     }
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (coordinatesListenerRegistration != null) {
-            coordinatesListenerRegistration.remove();
+
+    // *** GENERATE FILES AND SEND IT *** //
+    private void exportCoordinatesToGPXAndKML() {
+        firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("coordinates")
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()) {
+                        // Get coordinates
+
+                        List<Coordinate> coordinates = task.getResult().toObjects(Coordinate.class);
+
+                        this.generateGPXFile(coordinates);
+                        this.generateKMLFile(coordinates);
+
+                        this.sendEmailWithGpxKMLFiles();
+                    }
+                });
+    }
+
+    private void generateGPXFile(List<Coordinate> coordinates) {
+        File gpxFile = new File(getExternalFilesDir(null), trip.getDocID()+".gpx");
+
+        try {
+            FileWriter writer = new FileWriter(gpxFile);
+
+            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+
+            // Format = latitude, longitude
+            writer.write("<gpx version=\"1.1\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n");
+            for (Coordinate coordinate : coordinates) {
+                writer.write("<wpt lat=\"" + coordinate.getCoords().getLatitude() + "\" lon=\"" + coordinate.getCoords().getLongitude() + "\"></wpt>\n");
+            }
+            writer.write("</gpx>");
+
+            writer.close();
+        }
+        catch (IOException e) {
+            Toast.makeText(this, "Erreur lors de la génération du fichier GPX", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private void generateKMLFile(List<Coordinate> coordinates) {
+        File kmlFile = new File(getExternalFilesDir(null), trip.getDocID()+".kml");
+
+        try {
+            FileWriter writer = new FileWriter(kmlFile);
+
+            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            writer.write("<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n");
+
+            // Format = longtitude, latitude
+            for (Coordinate coordinate : coordinates) {
+                writer.write("<Placemark>\n");
+                writer.write("<Point><coordinates>" + coordinate.getCoords().getLongitude() + "," + coordinate.getCoords().getLatitude() + "</coordinates></Point>\n");
+                writer.write("</Placemark>\n");
+            }
+
+            writer.write("</kml>");
+
+            writer.close();
+        } catch (IOException e) {
+            Toast.makeText(this, "Erreur lors de la génération du fichier KML", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void sendEmailWithGpxKMLFiles(){
+        // Get the two files
+        File gpxFile = new File(getExternalFilesDir(null), trip.getDocID()+".gpx");
+        File kmlFile = new File(getExternalFilesDir(null), trip.getDocID()+".kml");
+
+        Uri gpxUri = FileProvider.getUriForFile(this, "com.example.myapp.fileprovider", gpxFile);
+        Uri kmlUri = FileProvider.getUriForFile(this, "com.example.myapp.fileprovider", kmlFile);
+
+        // Create the email intent
+        Intent emailIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+        emailIntent.setType("message/rfc822");
+
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Coordonnées GPS de mon voyage " + trip.getName());
+
+        // Add attachments
+        ArrayList<Uri> attachmentUris = new ArrayList<>();
+        attachmentUris.add(gpxUri);
+        attachmentUris.add(kmlUri);
+        emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, attachmentUris);
+
+        // Accordez les autorisations d'accès aux URI des fichiers pour le destinataire de l'e-mail
+        emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        // Grant permission to the receiving app
+        List<ResolveInfo> resInfoList = getPackageManager().queryIntentActivities(emailIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        for (ResolveInfo resolveInfo : resInfoList) {
+            String packageName = resolveInfo.activityInfo.packageName;
+            grantUriPermission(packageName, gpxUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            grantUriPermission(packageName, kmlUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+
+        startActivity(Intent.createChooser(emailIntent, "Envoyer des fichiers GPX/KML"));
+    }
+
 }
