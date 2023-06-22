@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
@@ -177,9 +178,10 @@ public class MainActivity extends AppCompatActivity {
         mAuth.signOut();
 
         Toast.makeText(this, "Déconnexion", Toast.LENGTH_SHORT).show();
-        
+
         // Redirect user to login page after logout
         Intent intentLogin = new Intent(this, LoginActivity.class);
         startActivity(intentLogin);
     }
+
 }

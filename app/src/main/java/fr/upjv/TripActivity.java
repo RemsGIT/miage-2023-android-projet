@@ -4,32 +4,46 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.checkerframework.checker.units.qual.A;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,6 +51,7 @@ import java.util.List;
 
 import fr.upjv.Adapters.CoordinatesAdapter;
 import fr.upjv.Model.Coordinate;
+import fr.upjv.Model.Picture;
 import fr.upjv.Model.Trip;
 import fr.upjv.Utils.SerializableGeoPoint;
 import fr.upjv.Utils.SerializableTimestamp;
@@ -47,10 +62,16 @@ public class TripActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
 
+
+    // FIRESTORE VARS
     private FirebaseFirestore firebaseFirestore;
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageReference;
 
     private TextView tripNameTextView;
     private TextView startDateTextView;
+
+    private ActivityResultLauncher<Intent> activityLauncher;
 
     // FLOATING ACTION BUTTONS
     private FloatingActionButton fabMain;
@@ -66,6 +87,7 @@ public class TripActivity extends AppCompatActivity {
 
     private CoordinatesAdapter coordinatesAdapter;
 
+    private ListenerRegistration coordinatesListenerRegistration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,13 +104,12 @@ public class TripActivity extends AppCompatActivity {
 
         // Init firestore
         this.firebaseFirestore = FirebaseFirestore.getInstance();
+        this.firebaseStorage = FirebaseStorage.getInstance();
+        this.storageReference = firebaseStorage.getReference();
 
         this.trip = (Trip) getIntent().getSerializableExtra("current_trip");
 
         this.recyclerView = findViewById(R.id.id_trip_recyclerView);
-
-        // Load coordinates of a trip
-        this.initCoordinates();
 
         // Rename text view
         this.tripNameTextView.setText(this.trip.getName());
@@ -99,47 +120,20 @@ public class TripActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Load coordinates of a trip
+        this.initCoordinates();
+        this.loadPictures();
+    }
+
     public void onClickRedirectToMap(View view) {
         Intent intent = new Intent(this, MapActivity.class);
 
         intent.putExtra("current_trip", this.trip);
-
         startActivity(intent);
-        ;
-    }
-
-    private void initCoordinates() {
-
-        Query coordinatesQuery = firebaseFirestore
-                .collection("voyages")
-                .document(trip.getDocID())
-                .collection("coordinates")
-                .orderBy("createdAt", Query.Direction.ASCENDING);
-
-
-        coordinatesAdapter = new CoordinatesAdapter();
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(coordinatesAdapter);
-
-
-        coordinatesQuery.addSnapshotListener((snapshot, error) -> {
-            if (error != null) {
-                return;
-            }
-
-            List<Coordinate> coordinates = new ArrayList<>();
-            for (DocumentSnapshot document : snapshot.getDocuments()) {
-                Coordinate coordinate = document.toObject(Coordinate.class);
-                coordinates.add(coordinate);
-            }
-
-            System.out.println("maj");
-
-            trip.setCoordinates(coordinates);
-            coordinatesAdapter.setCoordinates(coordinates);
-            coordinatesAdapter.notifyDataSetChanged();
-
-        });
     }
 
     public void onClickStopTrip(View view) {
@@ -165,19 +159,6 @@ public class TripActivity extends AppCompatActivity {
                 });
     }
 
-    private void initFloatingActionButton() {
-        this.fabMain = findViewById(R.id.id_trip_fab_main);
-        this.fabCamera = findViewById(R.id.id_trip_fab_camera);
-        this.fabMail = findViewById(R.id.id_trip_fab_mail);
-        this.fabPosition = findViewById(R.id.id_trip_fab_position);
-
-        // Init animations
-        this.rotateOpen = AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim);
-        this.rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim);
-        this.fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim);
-        this.toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim);
-    }
-
     public void onClickFabMain(View view) {
         setVisibility(clicked);
         setAnimation(clicked);
@@ -187,7 +168,14 @@ public class TripActivity extends AppCompatActivity {
     }
 
     public void onClickFabCamera(View view) {
-        Toast.makeText(this, "Ouvrir la camera", Toast.LENGTH_SHORT).show();
+        // Vérifier si la permission de la caméra est déjà accordée
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // La permission de la caméra n'est pas accordée, demander à l'utilisateur de l'accorder
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+        } else {
+            // La permission de la caméra est déjà accordée, ouvrir la caméra
+            openCamera();
+        }
     }
 
     public void onClickFabMail(View view) {
@@ -235,6 +223,84 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            // Vérifier si la permission de la caméra a été accordée
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // La permission de la caméra a été accordée, ouvrir la caméra
+                openCamera();
+            } else {
+                // La permission de la caméra a été refusée, afficher un message d'erreur ou prendre une autre action
+                Toast.makeText(this, "Permission de la caméra refusée", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    private void initCoordinates() {
+
+        Query coordinatesQuery = firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("coordinates")
+                .orderBy("createdAt", Query.Direction.ASCENDING);
+
+
+        coordinatesAdapter = new CoordinatesAdapter();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(coordinatesAdapter);
+
+
+        this.coordinatesListenerRegistration = coordinatesQuery.addSnapshotListener((snapshot, error) -> {
+            if (error != null) {
+                return;
+            }
+
+            List<Coordinate> coordinates = new ArrayList<>();
+            for (DocumentSnapshot document : snapshot.getDocuments()) {
+                Coordinate coordinate = document.toObject(Coordinate.class);
+                coordinates.add(coordinate);
+            }
+
+            System.out.println("maj");
+
+            trip.setCoordinates(coordinates);
+            coordinatesAdapter.setCoordinates(coordinates);
+            coordinatesAdapter.notifyDataSetChanged();
+        });
+    }
+    private void loadPictures() {
+        this.firebaseFirestore
+                .collection("voyages")
+                .document(trip.getDocID())
+                .collection("pictures")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()) {
+                        this.trip.setPictures(task.getResult().toObjects(Picture.class));
+                    }
+                });
+    }
+
+    private void initFloatingActionButton() {
+        this.fabMain = findViewById(R.id.id_trip_fab_main);
+        this.fabCamera = findViewById(R.id.id_trip_fab_camera);
+        this.fabMail = findViewById(R.id.id_trip_fab_mail);
+        this.fabPosition = findViewById(R.id.id_trip_fab_position);
+
+        // Init animations
+        this.rotateOpen = AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim);
+        this.rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim);
+        this.fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim);
+        this.toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim);
+
+        // Activity launcher for camera
+        this.initActivityLauncher();
+    }
+
     private void setVisibility(Boolean clicked) {
         if (!clicked) {
             this.fabCamera.setVisibility(View.VISIBLE);
@@ -272,6 +338,105 @@ public class TripActivity extends AppCompatActivity {
             this.fabCamera.setClickable(false);
             this.fabMail.setClickable(false);
             this.fabPosition.setClickable(false);
+        }
+    }
+
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        this.activityLauncher.launch(intent);
+    }
+
+    private void saveImageToCloudStorage(Uri imageUri) {
+        if(imageUri != null) {
+
+            // Create a ref of the file in Firebase Storage
+            StorageReference imageRef = storageReference.child("images/"+imageUri.getLastPathSegment());
+
+            UploadTask uploadTask = imageRef.putFile(imageUri);
+
+            uploadTask.addOnCompleteListener(taskSnapshot -> {
+                if(taskSnapshot.isSuccessful()) {
+                    imageRef.getDownloadUrl().addOnCompleteListener(uri -> {
+                        if(uri.isSuccessful()) {
+
+                            // get user's location
+                            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                            String provider = LocationManager.GPS_PROVIDER;
+                            if (locationManager != null && locationManager.isProviderEnabled(provider)) {
+                                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                                    Location lastKnownLocation = locationManager.getLastKnownLocation(provider);
+                                    try {
+                                        double latitude = lastKnownLocation.getLatitude();
+                                        double longitude = lastKnownLocation.getLongitude();
+
+                                        GeoPoint point = new GeoPoint(latitude, longitude);
+                                        String imageURL = uri.getResult().toString();
+
+                                        Picture picture = new Picture(imageURL, new SerializableGeoPoint(point));
+
+                                        // Store image url in firestore
+                                        this.firebaseFirestore
+                                                .collection("voyages")
+                                                .document(trip.getDocID())
+                                                .collection("pictures")
+                                                .add(picture)
+                                                .addOnCompleteListener(task -> {
+                                                    System.out.println(task.isSuccessful() ? "photo ok" : "photo pas ok");
+                                                });
+                                    }
+                                    catch (Exception e) { }
+
+                                }
+                            }
+                        }
+                    });
+                }
+            }).addOnFailureListener(error -> {
+                error.printStackTrace();
+            });
+        }
+    }
+
+    private File saveBitmapToFile(Bitmap bitmap) {
+        File file = null;
+        try {
+            file = File.createTempFile("image", ".jpg", getCacheDir());
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    private void initActivityLauncher() {
+        this.activityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult()
+                ,
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // Convert picture to bitmap
+                        Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+
+                        // Bitmap -> temporary file
+                        File tempFile = saveBitmapToFile(photo);
+
+                        // Temporary file -> uri : picture's url on firebase
+                        Uri uri = Uri.fromFile(tempFile);
+
+                        this.saveImageToCloudStorage(uri);
+                    }
+                }
+        );
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (coordinatesListenerRegistration != null) {
+            coordinatesListenerRegistration.remove();
         }
     }
 }
