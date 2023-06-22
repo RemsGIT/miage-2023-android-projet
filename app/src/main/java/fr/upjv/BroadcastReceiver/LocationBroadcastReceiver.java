@@ -7,7 +7,7 @@ import android.content.Intent;
 import fr.upjv.Services.LocationTrackingService;
 
 /**
- * Permet l'arrêt du service
+ * Allows to stop the location tracker service
  */
 public class LocationBroadcastReceiver extends BroadcastReceiver {
     private LocationTrackingService locationService;

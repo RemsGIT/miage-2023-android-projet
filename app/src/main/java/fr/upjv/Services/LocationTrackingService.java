@@ -34,7 +34,6 @@ import fr.upjv.Utils.SerializableTimestamp;
 import fr.upjv.miage_2023_android_projet.R;
 
 public class LocationTrackingService extends Service {
-    private static final long INTERVAL = 10000; // Interval in milliseconds
     private LocationManager locationManager;
     private LocationListener locationListener;
     private Handler handler;
@@ -63,8 +62,8 @@ public class LocationTrackingService extends Service {
                 if (currentTime - lastUpdateTime >= period) {
                     lastUpdateTime = currentTime;
 
-                    // Enregistrer la nouvelle localisation dans Firebase ici
-                    System.out.println("enregistrement vers firebase");
+                    // Save the new position to firebase
+                    System.out.println("Saving to firebase...");
 
                     Timestamp now = new Timestamp(new Date());
                     GeoPoint point = new GeoPoint(location.getLatitude(), location.getLongitude());
@@ -72,11 +71,11 @@ public class LocationTrackingService extends Service {
 
                     firebaseFirestore
                             .collection("voyages")
-                            .document(tripDocID) // trip id
+                            .document(tripDocID)
                             .collection("coordinates")
                             .add(newCoordinate)
                             .addOnCompleteListener(task -> {
-                                System.out.println(task.isSuccessful() ? "nouvelle pos firebase" : "erreur firebase new pos");
+                                System.out.println(task.isSuccessful() ? "new pos saved to firebase" : "new pos failed firebase");
                             });
                 }
             }
@@ -106,7 +105,7 @@ public class LocationTrackingService extends Service {
             public void run() {
                 System.out.println("runnable");
                 requestLocationUpdates();
-                handler.postDelayed(this, period); // Utilisez simplement la période en millisecondes
+                handler.postDelayed(this, period);
             }
         });
 
@@ -150,10 +149,10 @@ public class LocationTrackingService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
 
-            // Vérifier si le canal de notification existe déjà
+            // Check if notification's channel does not already exist
             String channelId = "my_channel_id";
             if (notificationManager.getNotificationChannel(channelId) == null) {
-                // Créer le canal de notification
+                // Create the notification's channel
                 CharSequence channelName = "My Channel";
                 String channelDescription = "Description of my channel";
                 int importance = NotificationManager.IMPORTANCE_DEFAULT;
@@ -164,7 +163,7 @@ public class LocationTrackingService extends Service {
                 channel.enableLights(false);
                 channel.enableVibration(false);
 
-                // Associer le canal de notification au gestionnaire de notifications
+                // Link the channel to notification manager
                 notificationManager.createNotificationChannel(channel);
             }
         }
