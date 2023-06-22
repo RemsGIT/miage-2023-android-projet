@@ -38,6 +38,7 @@ public class Trip implements Serializable {
 
     public Trip(String name, String start,String userID, String end, Integer period, Boolean isActive) {
         this.name = name;
+        this.userID = userID;
         this.start = start;
         this.end = end;
         this.period = period;
