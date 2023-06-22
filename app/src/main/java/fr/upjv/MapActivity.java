@@ -47,19 +47,13 @@ import org.osmdroid.views.overlay.Polyline;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.Objects;
 
 import fr.upjv.Model.Coordinate;
 import fr.upjv.Model.Picture;
 import fr.upjv.Model.Trip;
 import fr.upjv.miage_2023_android_projet.R;
 
-
-// TODO LIRE CI DESSOUS
-// FONCTION APPELÉ QUAND REFRESH COORDONNÉES OU PICTURES
-// POUR APRES LE CLEAR DE LA MAP: TOUT REMETTRE
-// REMETTRE AUSSI L'ICONE DU USER POSITION QD REFRESH
 public class MapActivity extends AppCompatActivity implements LocationListener {
 
     private LocationManager locationManager;
@@ -96,42 +90,8 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         mapController.setCenter(new GeoPoint(49.8941, 2.2958));
         mapController.setZoom(18);
 
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Get user's location
-            Location l = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-
-            // Start point
-            try {
-                GeoPoint geoPoint = new GeoPoint(l.getLatitude(), l.getLongitude());
-
-                // Center the map to user
-                mapController.setCenter(geoPoint);
-
-                this.createMarkerAtUserPosition(geoPoint);
-            } catch (Exception e) {
-                // Position unknowned
-                System.out.println(e.getMessage());
-            }
-
-        }
-
-        // Affichage des coordonnées enregistrées dans l'app
+        // Display coordinates on the map
         this.showAllCoordinates();
-        this.showAllPictures();
-    }
-
-    protected void onResume() {
-        super.onResume();
-        map.onResume();
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        } else {
-            // Demander les autorisations de localisation à l'utilisateur
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_PERMISSIONS_REQUEST_CODE);
-        }
     }
 
     @Override
@@ -163,6 +123,14 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
+
+        this.createMarkerAtUserPosition(location);
+
+        // Arrêter les mises à jour de la localisation après l'obtention de la première position
+        locationManager.removeUpdates(this);
+    }
+
+    private void createMarkerAtUserPosition(Location location) {
         // Récupérer la nouvelle localisation de l'utilisateur
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
@@ -170,16 +138,9 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         // Centrer la carte sur la position de l'utilisateur
         map.getController().setCenter(new GeoPoint(latitude, longitude));
 
-        this.createMarkerAtUserPosition(new GeoPoint(latitude, longitude));
-
-        // Arrêter les mises à jour de la localisation après l'obtention de la première position
-        locationManager.removeUpdates(this);
-    }
-
-    private void createMarkerAtUserPosition(GeoPoint geoPoint) {
         // Add marker at user's position
         Marker userMarker = new Marker(map);
-        userMarker.setPosition(geoPoint);
+        userMarker.setPosition(new GeoPoint(latitude, longitude));
         userMarker.setIcon(getResources().getDrawable(org.osmdroid.library.R.drawable.person));
         userMarker.setTitle("Votre position");
         userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -187,7 +148,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
     }
 
     public void onClickReturn(View view) {
-        System.out.println("return");
         finish();
     }
 
@@ -225,20 +185,18 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
                 map.getOverlays().add(pointMarker);
 
                 points.add(point);
-
-                pointMarker.setOnMarkerClickListener(((marker, mapView) -> {
-                    System.out.println("clear");
-                    map.getOverlays().clear();
-                    return true;
-                }));
             }
             this.displayLineBetweenCoordinates(points);
+
+            // Display all pictures
+            this.showAllPictures();
+
+            // Display user's position
+            this.getUserLocation();
 
             // Refresh map
             map.invalidate();
         });
-
-
     }
 
     private void showAllPictures() {
@@ -256,9 +214,8 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
             pictureMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
 
-            // Open picture on click on the icon
+            // Open picture when clicking on the icon
             pictureMarker.setOnMarkerClickListener((marker, mapView) -> {
-                // Appeler votre fonction ici
                 showImagePopup(picture.getImageUrl());
                 return true;
             });
@@ -282,22 +239,22 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
         ImageView imageView = dialog.findViewById(R.id.id_picture_popup_image);
 
-        // Obtenir les dimensions de l'écran
+        // Get screen's dimension
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
 
-        // Calculer la taille souhaitée (90% de la taille de l'écran)
+        // Get 80% of screen's width
         int targetWidth = (int) (screenWidth * 0.8);
 
-        // Appliquer les nouvelles dimensions à l'ImageView
+        // Update imageView's width
         ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
         layoutParams.width = targetWidth;
 
         imageView.setLayoutParams(layoutParams);
 
+        // Load the image in the imageView
         Picasso.get().load(imageUrl).into(imageView);
-
 
         dialog.show();
     }
@@ -307,6 +264,32 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         super.onStop();
         if (coordinatesListenerRegistration != null) {
             coordinatesListenerRegistration.remove();
+        }
+    }
+
+    private void getUserLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        // Check permissions
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+            // Permissions OK
+            Location userLoc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+
+            if(Objects.nonNull(userLoc)) {
+                this.createMarkerAtUserPosition(userLoc);
+            }
+            else {
+                // Update the loc
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+            }
+
+        } else {
+            // Ask permissions
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_PERMISSIONS_REQUEST_CODE);
         }
     }
 }

@@ -418,13 +418,13 @@ public class TripActivity extends AppCompatActivity {
                 ,
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        // La photo a été capturée, faites quelque chose avec les données de la photo
+                        // Convert picture to bitmap
                         Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
 
-                        // Convertir le Bitmap en fichier temporaire
+                        // Bitmap -> temporary file
                         File tempFile = saveBitmapToFile(photo);
 
-                        // Obtenir l'URI du fichier temporaire
+                        // Temporary file -> uri : picture's url on firebase
                         Uri uri = Uri.fromFile(tempFile);
 
                         this.saveImageToCloudStorage(uri);
