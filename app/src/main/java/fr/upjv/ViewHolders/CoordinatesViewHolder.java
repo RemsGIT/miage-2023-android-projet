@@ -32,7 +32,7 @@ public class CoordinatesViewHolder extends RecyclerView.ViewHolder {
         if(Objects.nonNull(coordinate)) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy H:mm");
 
-            // Define decimal format
+            // Define decimal format for coordinates
             DecimalFormat decimalFormat = new DecimalFormat("#.####");
 
             latitude.setText(decimalFormat.format(coordinate.getCoords().getLatitude()));

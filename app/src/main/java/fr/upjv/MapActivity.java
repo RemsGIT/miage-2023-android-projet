@@ -63,6 +63,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
 
     private Trip trip;
 
+    // Init firebase
     private FirebaseFirestore firebaseFirestore;
     private ListenerRegistration coordinatesListenerRegistration;
 
@@ -130,6 +131,10 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         locationManager.removeUpdates(this);
     }
 
+    /**
+     * Create a user marker at position parameter
+     * @param location
+     */
     private void createMarkerAtUserPosition(Location location) {
         // Récupérer la nouvelle localisation de l'utilisateur
         double latitude = location.getLatitude();
@@ -147,10 +152,17 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         map.getOverlays().add(userMarker);
     }
 
+    /**
+     * Back to the trip's page
+     * @param view
+     */
     public void onClickReturn(View view) {
         finish();
     }
 
+    /**
+     * Display the coordinates, pictures, user location
+     */
     private void showAllCoordinates() {
         Query coordinatesQuery = firebaseFirestore
                 .collection("voyages")
@@ -199,6 +211,9 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         });
     }
 
+    /**
+     * Set firebase listener to pictures
+     */
     private void showAllPictures() {
         for (Picture picture : trip.getPictures()) {
             Marker pictureMarker = new Marker(map);
@@ -224,6 +239,10 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         }
     }
 
+    /**
+     * Display red line between the coordinates
+     * @param points
+     */
     private void displayLineBetweenCoordinates(List<GeoPoint> points) {
         Polyline line = new Polyline();
         line.setPoints(points);
@@ -233,6 +252,10 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         map.getOverlayManager().add(line);
     }
 
+    /**
+     * Open the image in popup when clicking on the camera icon, using "picasso"
+     * @param imageUrl
+     */
     private void showImagePopup(String imageUrl) {
         Dialog dialog = new Dialog(MapActivity.this);
         dialog.setContentView(R.layout.popup_image);
@@ -267,6 +290,9 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         }
     }
 
+    /**
+     * Get the last known user's location or update if no exists and create marker
+     */
     private void getUserLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;

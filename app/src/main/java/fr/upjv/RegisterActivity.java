@@ -49,12 +49,21 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Register the user
+     * @param view
+     */
     public void handleClickRegister(View view) {
         Log.d(TAG, "sendForm : " + this.inputEmail.getText().toString());
 
         this.createAccount(this.inputEmail.getText().toString(), this.inputPassword.getText().toString());
     }
 
+    /**
+     * Save new user to firebase
+     * @param email
+     * @param password
+     */
     private void createAccount(String email, String password) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
@@ -63,9 +72,12 @@ public class RegisterActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
                         Log.d(TAG, "createAccount:success : " + user.toString());
 
-                        Toast.makeText(RegisterActivity.this, "New account created", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Compte créé", Toast.LENGTH_SHORT).show();
+
+                        // Redirect the user to login page
+                        this.redirectToLoginPage();
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Registration failed.",
+                        Toast.makeText(RegisterActivity.this, "Erreur de connexion. Vérifiez vos identifiants",
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -73,7 +85,18 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void reload() { }
 
+    /**
+     * onClick "se connecter"
+     * @param view
+     */
     public void handleGoToLogin(View view) {
+        this.redirectToLoginPage();
+    }
+
+    /**
+     * Redirect the user to login activity
+     */
+    private void redirectToLoginPage() {
         Intent intentLogin = new Intent(this, LoginActivity.class);
 
         startActivity(intentLogin);

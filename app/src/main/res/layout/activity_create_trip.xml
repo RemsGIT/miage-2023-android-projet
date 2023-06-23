@@ -13,7 +13,7 @@
         android:layout_marginBottom="30dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Name"
+        android:hint="Écrire le nom du voyage"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -32,22 +32,10 @@
         android:id="@+id/id_createtrip_text_debut"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="22dp"
         android:layout_marginBottom="8dp"
         android:text="Date de début"
         app:layout_constraintBottom_toTopOf="@+id/id_createtrip_edit_debut"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline3" />
-
-    <TextView
-        android:id="@+id/id_createtrip_text_fin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="22dp"
-        android:layout_marginBottom="8dp"
-        android:text="Date de fin"
-        app:layout_constraintBottom_toTopOf="@+id/id_createtrip_edit_fin"
-        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="@+id/id_createtrip_edit_debut"
         app:layout_constraintTop_toTopOf="@+id/guideline3" />
 
     <Button
@@ -65,26 +53,16 @@
 
     <EditText
         android:id="@+id/id_createtrip_edit_debut"
-        android:layout_width="181dp"
+        android:layout_width="0dp"
         android:layout_height="47dp"
-        android:layout_marginBottom="8dp"
-        android:ems="10"
-        android:inputType="date"
-        app:layout_constraintBottom_toTopOf="@+id/guideline4"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintHorizontal_bias="0.666"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <EditText
-        android:id="@+id/id_createtrip_edit_fin"
-        android:layout_width="166dp"
-        android:layout_height="45dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="30dp"
         android:ems="10"
         android:inputType="date"
         app:layout_constraintBottom_toTopOf="@+id/guideline4"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
@@ -146,6 +124,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:backgroundTint="#696565"
         android:onClick="onClickReturn"
         android:text="Retour"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -50,7 +50,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import fr.upjv.Adapters.CoordinatesAdapter;
 import fr.upjv.Model.Coordinate;
@@ -145,6 +147,10 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * OnClick "voir la carte'
+     * @param view
+     */
     public void onClickRedirectToMap(View view) {
         Intent intent = new Intent(this, MapActivity.class);
 
@@ -152,29 +158,43 @@ public class TripActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * OnClick "arreter le voyage"
+     * @param view
+     */
     public void onClickStopTrip(View view) {
+        Map<String, Object> tripUpdates = new HashMap<>();
+        tripUpdates.put("isActive", false);
 
-        trip.setIsActive(false);
+        // Set the end date to trip
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+        tripUpdates.put("end", dateFormatter.format(new Date()));
+
 
         this.firebaseFirestore
                 .collection("voyages")
                 .document(trip.getDocID())
-                .set(trip)
+                .update(tripUpdates)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(this, "Le voyage est terminé", Toast.LENGTH_SHORT).show();
+
+                        // Stop the location tracking service
+                        Intent stopIntent = new Intent("STOP_LOCATION_SERVICE");
+                        sendBroadcast(stopIntent);
 
                         // Redirect user to home page
                         Intent mainIntent = new Intent(this, MainActivity.class);
                         startActivity(mainIntent);
 
-                        // Stop the location listener
-                        Intent stopIntent = new Intent("STOP_LOCATION_SERVICE");
-                        sendBroadcast(stopIntent);
                     }
                 });
     }
 
+    /**
+     * On Click on the main floating action button : open/close others fab
+     * @param view
+     */
     public void onClickFabMain(View view) {
         setVisibility(clicked);
         setAnimation(clicked);
@@ -183,6 +203,10 @@ public class TripActivity extends AppCompatActivity {
         clicked = !clicked;
     }
 
+    /**
+     * On click on the camera floating action button : take picture
+     * @param view
+     */
     public void onClickFabCamera(View view) {
         // Vérifier si la permission de la caméra est déjà accordée
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -194,11 +218,19 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * OnClick on the mail floating action button : send mail with Gpx/Kml
+     * @param view
+     */
     public void onClickFabMail(View view) {
         Toast.makeText(this, "Envoyer un mail", Toast.LENGTH_SHORT).show();
         this.exportCoordinatesToGPXAndKML();
     }
 
+    /**
+     * OnClick on the position floating action button : save a position to trip
+     * @param view
+     */
     public void onClickFabPosition(View view) {
         // Save user's position manually
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -211,7 +243,7 @@ public class TripActivity extends AppCompatActivity {
 
                 Location lastKnownLocation = locationManager.getLastKnownLocation(provider);
 
-
+                // Get and save position to firestore
                 try {
                     double latitude = lastKnownLocation.getLatitude();
                     double longitude = lastKnownLocation.getLongitude();
@@ -256,7 +288,9 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Set the recyler view and the firebase listener : refresh the recycler view if there's update from firebase
+     */
     private void initCoordinates() {
 
         Query coordinatesQuery = firebaseFirestore
@@ -276,20 +310,27 @@ public class TripActivity extends AppCompatActivity {
                 return;
             }
 
+            // Create new list of coordinates from firebase
             List<Coordinate> coordinates = new ArrayList<>();
             for (DocumentSnapshot document : snapshot.getDocuments()) {
                 Coordinate coordinate = document.toObject(Coordinate.class);
                 coordinates.add(coordinate);
             }
 
-            System.out.println("maj");
-
             trip.setCoordinates(coordinates);
+
             coordinatesAdapter.setCoordinates(coordinates);
+
+            // Refresh the recycler view
             coordinatesAdapter.notifyDataSetChanged();
         });
 
     }
+
+    /**
+     * Load pictures and set listener
+     * Listener able the app to refresh the trip's pictures when user takes new picture
+     */
     private void loadPictures() {
         Query picturesQuery = firebaseFirestore
                 .collection("voyages")
@@ -305,6 +346,9 @@ public class TripActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Init animations and activity launcher for floating action buttons
+     */
     private void initFloatingActionButton() {
         this.fabMain = findViewById(R.id.id_trip_fab_main);
         this.fabCamera = findViewById(R.id.id_trip_fab_camera);
@@ -321,6 +365,10 @@ public class TripActivity extends AppCompatActivity {
         this.initActivityCameraLauncher();
     }
 
+    /**
+     * Update the visibility of floating action buttons according to the state of main fab : open/close
+     * @param clicked
+     */
     private void setVisibility(Boolean clicked) {
         if (!clicked) {
             this.fabCamera.setVisibility(View.VISIBLE);
@@ -333,6 +381,10 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Update the animation of FAB according to the state of main fab : open/close
+     * @param clicked
+     */
     private void setAnimation(Boolean clicked) {
         if (!clicked) {
             this.fabCamera.startAnimation(fromBottom);
@@ -349,6 +401,10 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Update the clickable state of FAB according to the state of main fab : open/close
+     * @param clicked
+     */
     private void setClickabled(Boolean clicked) {
         if (!clicked) {
             this.fabCamera.setClickable(true);
@@ -361,11 +417,19 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Open the device's camera
+     */
     private void openCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         this.activityLauncher.launch(intent);
     }
 
+    /**
+     * Save image to firebase storage
+     * Link the image to a trip in firestore
+     * @param imageUri
+     */
     private void saveImageToCloudStorage(Uri imageUri) {
         if(imageUri != null) {
 
@@ -402,7 +466,12 @@ public class TripActivity extends AppCompatActivity {
                                                 .collection("pictures")
                                                 .add(picture)
                                                 .addOnCompleteListener(task -> {
-                                                    System.out.println(task.isSuccessful() ? "photo ok" : "photo pas ok");
+                                                    if(task.isSuccessful()) {
+                                                        Toast.makeText(this, "La photo est bien enregistrée", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                    else {
+                                                        Toast.makeText(this, "Erreur lors de l'enregistrement de la photo", Toast.LENGTH_SHORT).show();
+                                                    }
                                                 });
                                     }
                                     catch (Exception e) { }
@@ -412,12 +481,16 @@ public class TripActivity extends AppCompatActivity {
                         }
                     });
                 }
-            }).addOnFailureListener(error -> {
-                error.printStackTrace();
-            });
+            }).addOnFailureListener(Throwable::printStackTrace);
         }
     }
 
+    /**
+     * Convert the photo (bitmap) to File
+     * Able the app to retrieve the Uri of the file
+     * @param bitmap
+     * @return
+     */
     private File saveBitmapToFile(Bitmap bitmap) {
         File file = null;
         try {
@@ -432,6 +505,10 @@ public class TripActivity extends AppCompatActivity {
         return file;
     }
 
+    /**
+     * Camera activity Launcher
+     * Able the app to retrieve the photo taken
+     */
     private void initActivityCameraLauncher() {
         this.activityLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult()
@@ -453,7 +530,9 @@ public class TripActivity extends AppCompatActivity {
         );
     }
 
-    // *** GENERATE FILES AND SEND IT *** //
+    /**
+     * Get the coordinates and export it to Gpx/Kml
+     */
     private void exportCoordinatesToGPXAndKML() {
         firebaseFirestore
                 .collection("voyages")
@@ -475,6 +554,10 @@ public class TripActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Generate a GPX file with trip's coordinates
+     * @param coordinates
+     */
     private void generateGPXFile(List<Coordinate> coordinates) {
         File gpxFile = new File(getExternalFilesDir(null), trip.getDocID()+".gpx");
 
@@ -497,6 +580,10 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Generate a KML file with trip's coordinates
+     * @param coordinates
+     */
     private void generateKMLFile(List<Coordinate> coordinates) {
         File kmlFile = new File(getExternalFilesDir(null), trip.getDocID()+".kml");
 
@@ -521,6 +608,9 @@ public class TripActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Send the mail with Intent with 2 files
+     */
     private void sendEmailWithGpxKMLFiles(){
         // Get the two files
         File gpxFile = new File(getExternalFilesDir(null), trip.getDocID()+".gpx");
@@ -552,7 +642,7 @@ public class TripActivity extends AppCompatActivity {
             grantUriPermission(packageName, kmlUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
 
-        startActivity(Intent.createChooser(emailIntent, "Envoyer des fichiers GPX/KML"));
+        startActivity(Intent.createChooser(emailIntent, "Envoie des fichiers GPX/KML"));
     }
 
 }

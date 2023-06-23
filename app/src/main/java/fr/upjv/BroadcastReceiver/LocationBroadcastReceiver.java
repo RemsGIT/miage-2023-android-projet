@@ -8,6 +8,7 @@ import fr.upjv.Services.LocationTrackingService;
 
 /**
  * Allows to stop the location tracker service
+ * Useful when the user stops the trip
  */
 public class LocationBroadcastReceiver extends BroadcastReceiver {
     private LocationTrackingService locationService;

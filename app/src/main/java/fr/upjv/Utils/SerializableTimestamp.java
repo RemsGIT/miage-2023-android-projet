@@ -5,13 +5,18 @@ import com.google.firebase.Timestamp;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Serialize a firebase Timestamp
+ * Useful for pass a trip as bundle...
+ */
 public class SerializableTimestamp implements Serializable {
     private long seconds;
     private int nanoseconds;
 
-    public SerializableTimestamp() {
-        // Constructeur vide requis pour la désérialisation
-    }
+    /**
+     * Needed for unserialize
+     */
+    public SerializableTimestamp() { }
 
     public SerializableTimestamp(Timestamp timestamp) {
         this.seconds = timestamp.getSeconds();

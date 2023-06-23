@@ -4,10 +4,17 @@ import com.google.firebase.firestore.GeoPoint;
 
 import java.io.Serializable;
 
+/**
+ * Serialize a firebase Geopoint
+ * Useful for pass a trip as bundle...
+ */
 public class SerializableGeoPoint implements Serializable {
     private double latitude;
     private double longitude;
 
+    /**
+     * Needed for unserialize
+     */
     public SerializableGeoPoint() { }
 
     public SerializableGeoPoint(GeoPoint geoPoint) {

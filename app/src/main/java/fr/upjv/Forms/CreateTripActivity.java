@@ -23,6 +23,9 @@ import fr.upjv.Model.Trip;
 import fr.upjv.Services.LocationTrackingService;
 import fr.upjv.miage_2023_android_projet.R;
 
+/**
+ * Form to create new trip
+ */
 public class CreateTripActivity extends AppCompatActivity {
 
     private TextView textPeriod;
@@ -30,8 +33,6 @@ public class CreateTripActivity extends AppCompatActivity {
 
     private EditText editTextName;
     private EditText editTextDateDebut;
-    private EditText editTextDateFin;
-
     private FirebaseFirestore firebaseFirestore;
     private FirebaseAuth mAuth;
 
@@ -44,7 +45,6 @@ public class CreateTripActivity extends AppCompatActivity {
         this.periodSeekBar = findViewById(R.id.id_createtrip_seekBar_period);
         this.editTextName = findViewById(R.id.id_createtrip_edit_name);
         this.editTextDateDebut = findViewById(R.id.id_createtrip_edit_debut);
-        this.editTextDateFin = findViewById(R.id.id_createtrip_edit_fin);
 
         // Init firebase
         this.firebaseFirestore = FirebaseFirestore.getInstance();
@@ -73,7 +73,7 @@ public class CreateTripActivity extends AppCompatActivity {
             }
         });
 
-        // Set default date
+        // Set default start date to today : user can't modify it
         SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
         Date date = new Date();
         this.editTextDateDebut.setText(dateFormatter.format(date));
@@ -85,39 +85,50 @@ public class CreateTripActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * Submit the form : format data and save to firestore
+     * @param view
+     */
     public void onClickSubmitForm(View view) {
         String name = this.editTextName.getText().toString();
         String debut = this.editTextDateDebut.getText().toString();
-        String fin = this.editTextDateFin.getText().toString();
         Integer period = this.periodSeekBar.getProgress();
 
-        // get mAuth et add uuid
+        Trip newTrip = new Trip(name, debut,mAuth.getCurrentUser().getUid(), period, true);
 
-        Trip newTrip = new Trip(name, debut,mAuth.getCurrentUser().getUid(), fin, period, true);
-
-        Toast.makeText(this, "Soumission du formulaire", Toast.LENGTH_SHORT).show();
-        System.out.println(name);
-        System.out.println(debut);
-        System.out.println(fin);
-        System.out.println(period);
+        Toast.makeText(this, "Enregistrement en cours...", Toast.LENGTH_SHORT).show();
 
         this.saveTrip(newTrip);
     }
 
+    /**
+     * Save the new trip to firestore and redirect user if saved
+     * @param data
+     */
     private void saveTrip(Trip data){
         this.firebaseFirestore
                 .collection("voyages")
                 .document()
                 .set(data)
                 .addOnCompleteListener(task -> {
-                    Toast.makeText(this, "Voyage créé", Toast.LENGTH_SHORT).show();
+                    if(task.isSuccessful()) {
+                        Toast.makeText(this, "Voyage créé", Toast.LENGTH_SHORT).show();
 
-                    // Redirect the user to home page
-                    Intent intentHome = new Intent(this, MainActivity.class);
-                    startActivity(intentHome);
+                        // Redirect the user to home page
+                        Intent intentHome = new Intent(this, MainActivity.class);
+                        startActivity(intentHome);
+                    }
+                    else {
+                        Toast.makeText(this, "Erreur lors de la création du voyage", Toast.LENGTH_SHORT).show();
+                    }
+
                 });
     }
 
+    /**
+     * Util to disable an edit text
+     * @param editText
+     */
     private void disableEditText(EditText editText) {
         editText.setFocusable(false);
         editText.setEnabled(false);

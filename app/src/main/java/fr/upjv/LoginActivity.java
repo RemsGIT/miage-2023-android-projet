@@ -39,6 +39,11 @@ public class LoginActivity extends AppCompatActivity {
         this.signIn(this.inputEmail.getText().toString(), this.inputPassword.getText().toString());
     }
 
+    /**
+     * Verify the user with firebase auth
+     * @param email
+     * @param password
+     */
     private void signIn(String email, String password ) {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
@@ -49,18 +54,25 @@ public class LoginActivity extends AppCompatActivity {
 
                         this.redirectToHomePage();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Authentication failed.",
+                        Toast.makeText(LoginActivity.this, "Erreur lors de votre inscription.",
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
+    /**
+     * OnClick "s'inscrire"
+     * @param view
+     */
     public void handleGoToRegister(View view) {
         Intent intentRegister = new Intent(this, RegisterActivity.class);
 
         startActivity(intentRegister);
     }
 
+    /**
+     * Redirect the user to home page
+     */
     private void redirectToHomePage(){
         Intent intentHome = new Intent(this, MainActivity.class);
 

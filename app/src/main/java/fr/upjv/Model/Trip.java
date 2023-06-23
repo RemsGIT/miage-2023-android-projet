@@ -25,6 +25,7 @@ public class Trip implements Serializable {
 
     public Trip() { }
 
+    // Created from firebase
     public Trip(String docID, String name,String userID, String start, String end, Integer period, Boolean isActive, List<Coordinate> coordinates, List<Picture> pictures) {
         this.docID = docID;
         this.name = name;
@@ -36,11 +37,11 @@ public class Trip implements Serializable {
         this.pictures = pictures;
     }
 
-    public Trip(String name, String start,String userID, String end, Integer period, Boolean isActive) {
+    // Created from code : new trip form
+    public Trip(String name, String start,String userID, Integer period, Boolean isActive) {
         this.name = name;
         this.userID = userID;
         this.start = start;
-        this.end = end;
         this.period = period;
         this.isActive = isActive;
     }

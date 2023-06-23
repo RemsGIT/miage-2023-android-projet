@@ -37,6 +37,7 @@ import fr.upjv.miage_2023_android_projet.R;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Init firebase
     private FirebaseAuth mAuth;
 
     private FirebaseFirestore firebaseFirestore;
@@ -107,12 +108,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Redirect the user to sign in page
+     */
     private void redirectToLogin() {
         Intent intentLogin = new Intent(this, LoginActivity.class);
 
         startActivity(intentLogin);
     }
 
+    /**
+     * Redirect the user to active trip's page
+     */
     private void redirectToTrip() {
         Intent intentTrip = new Intent(this, TripActivity.class);
 
@@ -121,12 +128,19 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intentTrip);
     }
 
+    /**
+     * Open the create trip form
+     * @param view
+     */
     public void redirectToCreateTripForm(View view) {
         Intent intentCreateTrip = new Intent(this, CreateTripActivity.class);
 
         startActivity(intentCreateTrip);
     }
 
+    /**
+     * Update UI components : image / text / button
+     */
     private void updateUI(){
         if(Objects.nonNull(this.currentTrip)) {
             this.textNbTrip.setText("Vous avez un voyage en cours");
@@ -152,6 +166,11 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    /**
+     * Start the location tracking service if period
+     * @param period
+     * @param tripDocID
+     */
     private void startLocationListenerOnPeriod(Integer period, String tripDocID) {
         LocationBroadcastReceiver broadcastReceiver = new LocationBroadcastReceiver();
         broadcastReceiver.setLocationService(new LocationTrackingService());
@@ -160,7 +179,9 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction("STOP_LOCATION_SERVICE");
         registerReceiver(broadcastReceiver, intentFilter);
 
-        //startService(new Intent(this, LocationTrackingService.class).putExtra("period", period).putExtra("tripdocid", tripDocID));
+        if (period > 0) {
+            //startService(new Intent(this, LocationTrackingService.class).putExtra("period", period).putExtra("tripdocid", tripDocID));
+        }
     }
 
     @Override
@@ -174,14 +195,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Logout the user and redirect him to sign in page
+     * @param view
+     */
     public void onClickLogout(View view) {
         mAuth.signOut();
 
         Toast.makeText(this, "Déconnexion", Toast.LENGTH_SHORT).show();
 
-        // Redirect user to login page after logout
-        Intent intentLogin = new Intent(this, LoginActivity.class);
-        startActivity(intentLogin);
+        this.redirectToLogin();
     }
 
 }
