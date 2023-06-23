@@ -302,17 +302,14 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
             // Permissions OK
             Location userLoc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 
             if(Objects.nonNull(userLoc)) {
                 this.createMarkerAtUserPosition(userLoc);
             }
-            else {
-                // Update the loc
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-            }
-
         } else {
             // Ask permissions
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_PERMISSIONS_REQUEST_CODE);
