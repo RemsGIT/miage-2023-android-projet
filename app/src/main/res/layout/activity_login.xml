@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="13dp"
-        android:text="Mot de passe"
+        android:text="@string/label_pwd"
         app:layout_constraintBottom_toTopOf="@+id/editTextLogin_password"
         app:layout_constraintStart_toStartOf="@+id/editTextLogin_password" />
 
@@ -50,7 +50,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="56dp"
-        android:text="Pas de compte ?"
+        android:text="@string/login_no_account"
         app:layout_constraintBaseline_toBaselineOf="@+id/button"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -62,7 +62,7 @@
         android:layout_marginBottom="8dp"
         android:backgroundTint="#FFFFFF"
         android:onClick="handleGoToRegister"
-        android:text="Je m'inscris"
+        android:text="@string/btn_register"
         android:textColor="#000000"
         app:layout_constraintBottom_toTopOf="@+id/btnLogin_register"
         app:layout_constraintEnd_toEndOf="@+id/btnLogin_register" />
@@ -73,7 +73,7 @@
         android:layout_height="47dp"
         android:layout_marginBottom="79dp"
         android:onClick="handleClickLogin"
-        android:text="Se connecter"
+        android:text="@string/btn_submit_connect"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/textView2" />
 
@@ -84,7 +84,7 @@
         android:layout_marginStart="4dp"
         android:layout_marginTop="344dp"
         android:layout_marginBottom="13dp"
-        android:text="Email"
+        android:text="@string/label_email"
         app:layout_constraintBottom_toTopOf="@+id/editTextLogin_email"
         app:layout_constraintStart_toStartOf="@+id/editTextLogin_email"
         app:layout_constraintTop_toTopOf="parent" />

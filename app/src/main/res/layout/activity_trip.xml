@@ -13,7 +13,7 @@
         android:layout_marginTop="12dp"
         android:layout_marginEnd="8dp"
         android:onClick="onClickRedirectToMap"
-        android:text="Voir la carte"
+        android:text="@string/btn_open_map"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Liste des coordonnées GPS"
+        android:text="@string/trip_title_coordinates"
         android:textColor="@color/black"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -45,7 +45,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="Nom du voyage"
         android:textColor="@color/black"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -56,7 +55,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Date debut"
         app:layout_constraintStart_toStartOf="@+id/id_trip_text_name"
         app:layout_constraintTop_toBottomOf="@+id/id_trip_text_name" />
 
@@ -68,7 +66,7 @@
         android:backgroundTint="@color/red"
         android:forceDarkAllowed="false"
         android:onClick="onClickStopTrip"
-        android:text="Arreter le voyage"
+        android:text="@string/btn_stop_trip"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -153,7 +151,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Latitude"
+            android:text="@string/column_latitude"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -163,7 +161,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Longitude"
+            android:text="@string/column_longitude"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -173,7 +171,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Date"
+            android:text="@string/column_date"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />

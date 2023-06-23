@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         String password = this.inputPassword.getText().toString().trim();
 
         if(email.equals("") || password.equals("")) {
-            Toast.makeText(this, "Tous les champs sont obligatoires", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_fields_missing, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -59,11 +59,11 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         Log.d(TAG, "Login:success : " + user.getEmail());
-                        Toast.makeText(LoginActivity.this, "Connexion", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, R.string.text_connection, Toast.LENGTH_SHORT).show();
 
                         this.redirectToHomePage();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Erreur de connexion.\nVérifiez vos identifiants",
+                        Toast.makeText(LoginActivity.this, R.string.error_text_login,
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

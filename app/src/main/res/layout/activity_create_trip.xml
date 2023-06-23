@@ -12,8 +12,8 @@
         android:layout_height="45dp"
         android:layout_marginBottom="30dp"
         android:ems="10"
+        android:hint="@string/placeholder_trip_name"
         android:inputType="textPersonName"
-        android:hint="Écrire le nom du voyage"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginBottom="8dp"
-        android:text="Nom du voyage"
+        android:text="@string/label_trip_name"
         app:layout_constraintBottom_toTopOf="@+id/id_createtrip_edit_name"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -33,7 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="Date de début"
+        android:text="@string/label_trip_period"
         app:layout_constraintBottom_toTopOf="@+id/id_createtrip_edit_debut"
         app:layout_constraintStart_toStartOf="@+id/id_createtrip_edit_debut"
         app:layout_constraintTop_toTopOf="@+id/guideline3" />
@@ -46,7 +46,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="50dp"
         android:onClick="onClickSubmitForm"
-        android:text="Créer le voyage"
+        android:text="@string/btn_trip_submit"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/id_createtrip_seekBar_period" />
@@ -90,7 +90,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Période d'enregistrement"
+        android:text="@string/label_trip_period"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline4" />
@@ -111,7 +111,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Nouveau voyage"
+        android:text="@string/trip_form_title"
         android:textColor="#000000"
         android:textSize="40sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -126,7 +126,7 @@
         android:layout_marginBottom="8dp"
         android:backgroundTint="#696565"
         android:onClick="onClickReturn"
-        android:text="Retour"
+        android:text="@string/btn_back"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

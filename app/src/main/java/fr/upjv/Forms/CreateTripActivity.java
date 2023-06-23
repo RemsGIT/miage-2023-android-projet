@@ -95,14 +95,14 @@ public class CreateTripActivity extends AppCompatActivity {
         Integer period = this.periodSeekBar.getProgress();
 
         if(name.equals("") || debut.equals("")) {
-            Toast.makeText(this, "Tous les champs sont obligatoires", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_fields_missing, Toast.LENGTH_SHORT).show();
 
             return;
         }
 
         Trip newTrip = new Trip(name, debut,mAuth.getCurrentUser().getUid(), period, true);
 
-        Toast.makeText(this, "Enregistrement en cours...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.info_saving, Toast.LENGTH_SHORT).show();
 
         this.saveTrip(newTrip);
     }
@@ -118,14 +118,14 @@ public class CreateTripActivity extends AppCompatActivity {
                 .set(data)
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()) {
-                        Toast.makeText(this, "Voyage créé", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.success_trip_create, Toast.LENGTH_SHORT).show();
 
                         // Redirect the user to home page
                         Intent intentHome = new Intent(this, MainActivity.class);
                         startActivity(intentHome);
                     }
                     else {
-                        Toast.makeText(this, "Erreur lors de la création du voyage", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.error_trip_create, Toast.LENGTH_SHORT).show();
                     }
 
                 });

@@ -177,7 +177,7 @@ public class TripActivity extends AppCompatActivity {
                 .update(tripUpdates)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(this, "Le voyage est terminé", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.success_stop_trip, Toast.LENGTH_SHORT).show();
 
                         // Stop the location tracking service
                         Intent stopIntent = new Intent("STOP_LOCATION_SERVICE");
@@ -223,7 +223,7 @@ public class TripActivity extends AppCompatActivity {
      * @param view
      */
     public void onClickFabMail(View view) {
-        Toast.makeText(this, "Envoie GPX et KML", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.info_mail_send_gpx_kml, Toast.LENGTH_SHORT).show();
         this.exportCoordinatesToGPXAndKML();
     }
 
@@ -258,16 +258,16 @@ public class TripActivity extends AppCompatActivity {
                             .collection("coordinates")
                             .add(newCoordinate)
                             .addOnCompleteListener(task -> {
-                                String message = task.isSuccessful() ? "Position enregistrée manuellement" : "Erreur lors de l'enregistrement de la position";
+                                String message = task.isSuccessful() ? getString(R.string.success_save_position) : getString(R.string.error_save_position);
                                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
                             });
                 }
                 catch (Exception e) {
-                    Toast.makeText(this, "Votre localisation ne peut pas être récupérée. Veuillez réessayer plus tard", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.error_position_unavailable, Toast.LENGTH_SHORT).show();
                 }
 
             } else {
-                Toast.makeText(this, "Vous n'avez pas autorisé l'accès votre localisation", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.error_position_denied, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -283,7 +283,7 @@ public class TripActivity extends AppCompatActivity {
                 openCamera();
             } else {
                 // La permission de la caméra a été refusée, afficher un message d'erreur ou prendre une autre action
-                Toast.makeText(this, "Permission de la caméra refusée", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.error_camera_denied, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -467,10 +467,10 @@ public class TripActivity extends AppCompatActivity {
                                                 .add(picture)
                                                 .addOnCompleteListener(task -> {
                                                     if(task.isSuccessful()) {
-                                                        Toast.makeText(this, "La photo est bien enregistrée", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(this, R.string.success_save_picture, Toast.LENGTH_SHORT).show();
                                                     }
                                                     else {
-                                                        Toast.makeText(this, "Erreur lors de l'enregistrement de la photo", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(this, R.string.error_save_picture, Toast.LENGTH_SHORT).show();
                                                     }
                                                 });
                                     }
@@ -576,7 +576,7 @@ public class TripActivity extends AppCompatActivity {
             writer.close();
         }
         catch (IOException e) {
-            Toast.makeText(this, "Erreur lors de la génération du fichier GPX", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_generate_gpx, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -604,7 +604,7 @@ public class TripActivity extends AppCompatActivity {
 
             writer.close();
         } catch (IOException e) {
-            Toast.makeText(this, "Erreur lors de la génération du fichier KML", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_generate_kml, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -642,7 +642,7 @@ public class TripActivity extends AppCompatActivity {
             grantUriPermission(packageName, kmlUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
 
-        startActivity(Intent.createChooser(emailIntent, "Envoie des fichiers GPX/KML"));
+        startActivity(Intent.createChooser(emailIntent, getString(R.string.info_mail_send_gpx_kml)));
     }
 
 }

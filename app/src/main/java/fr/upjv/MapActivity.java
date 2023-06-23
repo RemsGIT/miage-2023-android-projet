@@ -147,7 +147,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
         Marker userMarker = new Marker(map);
         userMarker.setPosition(new GeoPoint(latitude, longitude));
         userMarker.setIcon(getResources().getDrawable(org.osmdroid.library.R.drawable.person));
-        userMarker.setTitle("Votre position");
+        userMarker.setTitle(getString(R.string.info_user_position));
         userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         map.getOverlays().add(userMarker);
     }
@@ -191,7 +191,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener {
                 GeoPoint point = new GeoPoint(latitude, longitude);
 
                 pointMarker.setPosition(point);
-                pointMarker.setTitle("Position enregistrée \npendant votre voyage");
+                pointMarker.setTitle(getString(R.string.info_coordinate_saved));
                 pointMarker.setIcon(getResources().getDrawable(R.drawable.red_circle_svgrepo_com));
                 pointMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_TOP);
                 map.getOverlays().add(pointMarker);

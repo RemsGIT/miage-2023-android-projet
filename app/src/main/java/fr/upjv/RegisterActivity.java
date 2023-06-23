@@ -56,7 +56,7 @@ public class RegisterActivity extends AppCompatActivity {
         String password = this.inputPassword.getText().toString().trim();
 
         if(email.equals("") || password.equals("")) {
-            Toast.makeText(this, "Tous les champs sont obligatoires", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_fields_missing, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -75,7 +75,7 @@ public class RegisterActivity extends AppCompatActivity {
                         // Register success -> sign in the user
                         FirebaseUser user = mAuth.getCurrentUser();
 
-                        Toast.makeText(RegisterActivity.this, "Compte créé", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, R.string.success_account_create, Toast.LENGTH_SHORT).show();
 
                         // Redirect the user to login page
                         this.redirectToLoginPage();

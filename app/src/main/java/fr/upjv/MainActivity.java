@@ -71,12 +71,9 @@ public class MainActivity extends AppCompatActivity {
 
         if(user == null) {
             // Redirect the user to login page if not connected
-            System.out.println("pas connecté");
             redirectToLogin();
         }
         else {
-            System.out.println(user.getEmail());
-
             // Check if there is an active trip
             this.firebaseFirestore
                     .collection("voyages")
@@ -143,8 +140,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void updateUI(){
         if(Objects.nonNull(this.currentTrip)) {
-            this.textNbTrip.setText("Vous avez un voyage en cours");
-            this.btnActionTrip.setText("Mon voyage");
+            this.textNbTrip.setText(R.string.title_trip_active);
+            this.btnActionTrip.setText(R.string.btn_access_trip);
 
             this.imageView.setImageResource(R.drawable.background_trip);
 
@@ -202,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClickLogout(View view) {
         mAuth.signOut();
 
-        Toast.makeText(this, "Déconnexion", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.text_logout, Toast.LENGTH_SHORT).show();
 
         this.redirectToLogin();
     }
