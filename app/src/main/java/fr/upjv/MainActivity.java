@@ -126,10 +126,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Open the create trip form
-     * @param view
+     * Redirect the user to new trip form
      */
-    public void redirectToCreateTripForm(View view) {
+    private void redirectToCreateTrip() {
         Intent intentCreateTrip = new Intent(this, CreateTripActivity.class);
 
         startActivity(intentCreateTrip);
@@ -146,6 +145,14 @@ public class MainActivity extends AppCompatActivity {
             this.imageView.setImageResource(R.drawable.background_trip);
 
             this.btnActionTrip.setOnClickListener(v -> redirectToTrip());
+        }
+        else {
+            this.textNbTrip.setText(R.string.title_no_trip);
+            this.btnActionTrip.setText(R.string.btn_new_trip);
+
+            this.imageView.setImageResource(R.drawable.lost_man_img);
+
+            this.btnActionTrip.setOnClickListener(v -> redirectToCreateTrip());
         }
     }
 
