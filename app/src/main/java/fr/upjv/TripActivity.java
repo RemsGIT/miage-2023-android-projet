@@ -223,7 +223,7 @@ public class TripActivity extends AppCompatActivity {
      * @param view
      */
     public void onClickFabMail(View view) {
-        Toast.makeText(this, "Envoyer un mail", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Envoie GPX et KML", Toast.LENGTH_SHORT).show();
         this.exportCoordinatesToGPXAndKML();
     }
 

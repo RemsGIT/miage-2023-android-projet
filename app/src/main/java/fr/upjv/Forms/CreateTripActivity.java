@@ -90,9 +90,15 @@ public class CreateTripActivity extends AppCompatActivity {
      * @param view
      */
     public void onClickSubmitForm(View view) {
-        String name = this.editTextName.getText().toString();
+        String name = this.editTextName.getText().toString().trim();
         String debut = this.editTextDateDebut.getText().toString();
         Integer period = this.periodSeekBar.getProgress();
+
+        if(name.equals("") || debut.equals("")) {
+            Toast.makeText(this, "Tous les champs sont obligatoires", Toast.LENGTH_SHORT).show();
+
+            return;
+        }
 
         Trip newTrip = new Trip(name, debut,mAuth.getCurrentUser().getUid(), period, true);
 

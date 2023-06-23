@@ -15,8 +15,6 @@ import com.google.firebase.auth.FirebaseUser;
 import fr.upjv.miage_2023_android_projet.R;
 
 public class RegisterActivity extends AppCompatActivity {
-    private static final String TAG = "Register";
-
     private FirebaseAuth mAuth;
 
     // Components
@@ -54,9 +52,15 @@ public class RegisterActivity extends AppCompatActivity {
      * @param view
      */
     public void handleClickRegister(View view) {
-        Log.d(TAG, "sendForm : " + this.inputEmail.getText().toString());
+        String email = this.inputEmail.getText().toString().trim();
+        String password = this.inputPassword.getText().toString().trim();
 
-        this.createAccount(this.inputEmail.getText().toString(), this.inputPassword.getText().toString());
+        if(email.equals("") || password.equals("")) {
+            Toast.makeText(this, "Tous les champs sont obligatoires", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        this.createAccount(email, password);
     }
 
     /**
@@ -70,14 +74,13 @@ public class RegisterActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         // Register success -> sign in the user
                         FirebaseUser user = mAuth.getCurrentUser();
-                        Log.d(TAG, "createAccount:success : " + user.toString());
 
                         Toast.makeText(RegisterActivity.this, "Compte créé", Toast.LENGTH_SHORT).show();
 
                         // Redirect the user to login page
                         this.redirectToLoginPage();
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Erreur de connexion. Vérifiez vos identifiants",
+                        Toast.makeText(RegisterActivity.this, task.getException().getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

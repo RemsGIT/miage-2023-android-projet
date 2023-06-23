@@ -36,7 +36,16 @@ public class LoginActivity extends AppCompatActivity {
 
 
     public void handleClickLogin(View view) {
-        this.signIn(this.inputEmail.getText().toString(), this.inputPassword.getText().toString());
+
+        String email = this.inputEmail.getText().toString().trim();
+        String password = this.inputPassword.getText().toString().trim();
+
+        if(email.equals("") || password.equals("")) {
+            Toast.makeText(this, "Tous les champs sont obligatoires", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        this.signIn(email, password);
     }
 
     /**
@@ -54,7 +63,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         this.redirectToHomePage();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Erreur lors de votre inscription.",
+                        Toast.makeText(LoginActivity.this, "Erreur de connexion.\nVérifiez vos identifiants",
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
