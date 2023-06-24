@@ -129,14 +129,4 @@ public class Trip implements Serializable {
                 ", isActive=" + isActive +
                 '}';
     }
-
-    public void clearCoordinates() {
-        this.coordinates.clear();
-    }
-
-    public void addAllCoordinates(List<Coordinate> coordinates) {
-        System.out.println("appel addAll");
-        System.out.println(coordinates.size());
-        coordinates.addAll(coordinates);
-    }
 }

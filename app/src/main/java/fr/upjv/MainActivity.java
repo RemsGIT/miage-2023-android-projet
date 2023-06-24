@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, intentFilter);
 
         if (period > 0) {
-            //startService(new Intent(this, LocationTrackingService.class).putExtra("period", period).putExtra("tripdocid", tripDocID));
+            startService(new Intent(this, LocationTrackingService.class).putExtra("period", period).putExtra("tripdocid", tripDocID));
         }
     }
 

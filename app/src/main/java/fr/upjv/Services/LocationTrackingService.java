@@ -63,8 +63,6 @@ public class LocationTrackingService extends Service {
                     lastUpdateTime = currentTime;
 
                     // Save the new position to firebase
-                    System.out.println("Saving to firebase...");
-
                     Timestamp now = new Timestamp(new Date());
                     GeoPoint point = new GeoPoint(location.getLatitude(), location.getLongitude());
                     Coordinate newCoordinate = new Coordinate(new SerializableTimestamp(now), new SerializableGeoPoint(point));
@@ -74,9 +72,7 @@ public class LocationTrackingService extends Service {
                             .document(tripDocID)
                             .collection("coordinates")
                             .add(newCoordinate)
-                            .addOnCompleteListener(task -> {
-                                System.out.println(task.isSuccessful() ? "new pos saved to firebase" : "new pos failed firebase");
-                            });
+                            .addOnCompleteListener(task -> {});
                 }
             }
 
@@ -103,7 +99,6 @@ public class LocationTrackingService extends Service {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                System.out.println("runnable");
                 requestLocationUpdates();
                 handler.postDelayed(this, period);
             }
