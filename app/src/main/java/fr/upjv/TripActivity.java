@@ -120,8 +120,7 @@ public class TripActivity extends AppCompatActivity {
         // Rename text view
         this.tripNameTextView.setText(this.trip.getName());
 
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-        this.startDateTextView.setText(dateFormatter.format(new Date(this.trip.getStart())));
+        this.startDateTextView.setText(this.trip.getStart().toString());
 
 
     }
